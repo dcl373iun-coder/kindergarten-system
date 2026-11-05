@@ -802,6 +802,61 @@
     // 初始化
     document.getElementById('formMotherTongue').value = nurseryRhymesDB['第一週'];
     syncPreview();
+  // ==========================================
+    // 雲端 GAS 串接設定 (請替換下方的 GAS 網址)
+    // ==========================================
+    const GAS_API_URL = "您的_GOOGLE_APPS_SCRIPT_網址_貼在這裡";
+
+    async function saveWeeklyLogToCloud() {
+      const btn = document.getElementById('btnSaveCloud');
+      btn.disabled = true;
+      btn.innerText = "⏳ 儲存中...";
+
+      // 收集畫面上所有要存入試算表的欄位
+      const payload = {
+        year: document.getElementById('formYear').value,
+        semester: document.getElementById('formSemester').value,
+        classLevel: document.getElementById('formClassLevel').value,
+        week: document.getElementById('formWeek').value,
+        date: document.getElementById('formDate').value,
+        teacher: document.getElementById('formTeacher').value,
+        theme: document.getElementById('formTheme').value,
+        concept: document.getElementById('formConcept').value,
+        bigGoals: document.getElementById('viewBigGoals').innerText,
+        counts: {
+          '身': document.getElementById('badge-身').innerText,
+          '認': document.getElementById('badge-認').innerText,
+          '語': document.getElementById('badge-語').innerText,
+          '社': document.getElementById('badge-社').innerText,
+          '美': document.getElementById('badge-美').innerText,
+          '情': document.getElementById('badge-情').innerText
+        },
+        act1Content: document.getElementById('formAct1Content').value,
+        act1Indicator: document.getElementById('viewAct1IndicatorCode').innerText,
+        act2Content: document.getElementById('formAct2Content').value,
+        act2Indicator: document.getElementById('viewAct2IndicatorCode').innerText,
+        act3Content: document.getElementById('formAct3Content').value,
+        act3Indicator: document.getElementById('viewAct3IndicatorCode').innerText,
+        learningArea: document.getElementById('formLearningArea').value,
+        motherTongue: document.getElementById('formMotherTongue').value,
+        reflection: document.getElementById('formReflection').value
+      };
+
+      try {
+        await fetch(GAS_API_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        alert(`✅ ${payload.week} 週誌已成功儲存至 Google 試算表！`);
+      } catch (err) {
+        alert("❌ 儲存失敗，請檢查網路或 GAS 網址：" + err);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "💾 儲存此週至雲端";
+      }
+    }
   </script>
 </body>
 </html>
