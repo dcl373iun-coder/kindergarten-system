@@ -231,7 +231,7 @@
         <div class="flex justify-between items-center mb-1">
           <input type="text" id="formAct1Title" value="【活動一:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
           <button type="button" onclick="addActivityIndicator('act1')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
-            ＋ 新增第 2 個指標
+            ＋ 新增指標項目
           </button>
         </div>
         <textarea id="formAct1Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
@@ -245,7 +245,7 @@
         <div class="flex justify-between items-center mb-1">
           <input type="text" id="formAct2Title" value="【活動二:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
           <button type="button" onclick="addActivityIndicator('act2')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
-            ＋ 新增第 2 個指標
+            ＋ 新增指標項目
           </button>
         </div>
         <textarea id="formAct2Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
@@ -259,7 +259,7 @@
         <div class="flex justify-between items-center mb-1">
           <input type="text" id="formAct3Title" value="【活動三:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
           <button type="button" onclick="addActivityIndicator('act3')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
-            ＋ 新增第 2 個指標
+            ＋ 新增指標項目
           </button>
         </div>
         <textarea id="formAct3Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
@@ -545,10 +545,12 @@
       document.getElementById('pickerModal').classList.add('hidden');
     }
 
-    // 新增活動的第 2 個指標
+    // 系統設置：單一活動指標最大數量 (預留未來管理層設置介面調整)
+    const MAX_INDICATORS_PER_ACTIVITY = 5;
+
     function addActivityIndicator(actKey) {
-      if (activityBlocks[actKey].length >= 2) {
-        alert("單一活動最多支援 2 組指標與對應照片組合！");
+      if (activityBlocks[actKey].length >= MAX_INDICATORS_PER_ACTIVITY) {
+        alert(`單一活動最多支援 ${MAX_INDICATORS_PER_ACTIVITY} 組指標與對應照片組合！`);
         return;
       }
       activityBlocks[actKey].push({ indicator: null, photos: [] });
@@ -796,12 +798,12 @@
       renderDetailsList();
     }
 
-    // 渲染指標明細清單 (色彩徽章 + 排序)
+    // 渲染指標明細清單 (色彩徽章 + 排序 + 當前編輯週醒目標示)
     function renderDetailsList() {
       const listEl = document.getElementById('selectedIndicatorsList');
       if (!listEl) return;
       listEl.innerHTML = '';
-      const activeWeek = document.getElementById('formWeek').value.trim();
+      const activeWeek = document.getElementById('formWeek').value.trim() || '第  週';
       const allItems = [];
 
       const domainStyles = {
@@ -813,7 +815,7 @@
         '情': 'bg-pink-100 text-pink-800 border-pink-300'
       };
 
-      // 1. 抓取雲端歷史已存週次指標
+      // 1. 抓取雲端歷史已存週次指標 (標記 isCurrent: false)
       if (Array.isArray(cachedCloudLogs)) {
         cachedCloudLogs.forEach(row => {
           if (row['週次'] !== activeWeek) {
@@ -823,7 +825,7 @@
                 val.split(';;').forEach(part => {
                   const code = part.split('\n')[0].trim();
                   const ind = indicatorsDB.find(i => i.smallCode === code);
-                  if (ind) allItems.push({ week: row['週次'], ...ind });
+                  if (ind) allItems.push({ week: row['週次'], isCurrent: false, ...ind });
                 });
               }
             });
@@ -831,10 +833,10 @@
         });
       }
 
-      // 2. 抓取當前編輯中週次指標 (多指標支援)
+      // 2. 抓取當前編輯中週次指標 (標記 isCurrent: true)
       Object.values(activityBlocks).forEach(blocks => {
         blocks.forEach(b => {
-          if (b.indicator) allItems.push({ week: activeWeek || '當週', ...b.indicator });
+          if (b.indicator) allItems.push({ week: activeWeek, isCurrent: true, ...b.indicator });
         });
       });
 
@@ -858,21 +860,34 @@
         }
       });
 
-      // 5. 渲染輸出
+      // 5. 渲染輸出 (當前編輯週加上專屬亮色背景與邊框)
       filtered.forEach(ind => {
         const div = document.createElement('div');
-        div.className = 'py-1 flex flex-wrap items-center gap-1.5';
         const style = domainStyles[ind.domain] || 'bg-slate-100 text-slate-800 border-slate-300';
-        div.innerHTML = `
-          <span class="inline-block px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded font-bold text-[11px]">【${ind.week}】</span>
-          <span class="inline-block px-1.5 py-0.5 rounded font-black text-[11px] border ${style}">[${ind.domain}]</span>
-          <span class="font-bold text-slate-800 text-xs md:text-sm">${ind.bigCode} ${ind.bigName}</span>
-          <span class="text-slate-600 text-xs md:text-sm">　${ind.smallCode} ${ind.smallName}</span>
-        `;
+        
+        if (ind.isCurrent) {
+          // 👉 當前正在編輯的項目：淡金黃底色、左側橘色粗條、陰影凸顯
+          div.className = 'py-1.5 px-2 my-0.5 bg-amber-50/90 border-l-4 border-amber-500 rounded-r flex flex-wrap items-center gap-1.5 shadow-xs transition';
+          div.innerHTML = `
+            <span class="inline-block px-1.5 py-0.5 bg-amber-200 text-amber-900 border border-amber-300 rounded font-black text-[11px]">【${ind.week} ✏️當前】</span>
+            <span class="inline-block px-1.5 py-0.5 rounded font-black text-[11px] border ${style}">[${ind.domain}]</span>
+            <span class="font-bold text-slate-900 text-xs md:text-sm">${ind.bigCode} ${ind.bigName}</span>
+            <span class="text-slate-700 text-xs md:text-sm">　${ind.smallCode} ${ind.smallName}</span>
+          `;
+        } else {
+          // 👉 歷史雲端已存紀錄：標準灰色簡潔條目
+          div.className = 'py-1 px-2 flex flex-wrap items-center gap-1.5 border-b border-slate-100 last:border-0';
+          div.innerHTML = `
+            <span class="inline-block px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded font-bold text-[11px]">【${ind.week}】</span>
+            <span class="inline-block px-1.5 py-0.5 rounded font-black text-[11px] border ${style}">[${ind.domain}]</span>
+            <span class="font-bold text-slate-800 text-xs md:text-sm">${ind.bigCode} ${ind.bigName}</span>
+            <span class="text-slate-600 text-xs md:text-sm">　${ind.smallCode} ${ind.smallName}</span>
+          `;
+        }
         listEl.appendChild(div);
       });
     }
-
+    
     // ==========================================
     // 同步前台所有欄位 (重要核心)
     // ==========================================
