@@ -97,7 +97,18 @@
         <span class="text-xs text-slate-400">（點選下方領域卡片，可單獨切換查看該領域指標明細）</span>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="showDetailsByDomain('ALL')" class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600 hover:bg-slate-200 font-semibold">顯示全部</button>
+        <!-- 圖一需求：主要概念切換篩選下拉選單 -->
+        <div class="flex items-center gap-1 text-xs">
+          <span class="text-slate-500 font-medium">主要概念：</span>
+          <select id="selectConceptFilter" onchange="filterDetailsByConcept(this.value)" class="border border-indigo-300 rounded px-2 py-1 text-xs bg-indigo-50 font-bold text-indigo-900">
+            <option value="ALL">全部概念</option>
+            <option value="大富翁">1. 大富翁</option>
+            <option value="走吧～走吧～">2. 走吧～走吧～</option>
+            <option value="下一站">3. 下一站</option>
+            <option value="藝起走">4. 藝起走</option>
+          </select>
+        </div>
+        <button onclick="showDetailsByDomain('ALL')" class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600 hover:bg-slate-200 font-semibold">顯示全部領域</button>
         <button onclick="toggleDetails()" id="toggleBtn" class="text-xs text-indigo-600 hover:underline font-semibold">收合/展開 ▲</button>
       </div>
     </div>
@@ -412,69 +423,112 @@
   </main>
 </div> <!-- 結束 sectionWeeklyLog -->
 <!-- =========================================================================
-       【功能二：幼兒學習評量表模組】(預設隱藏，切換 Tab 顯示)
+       【功能二：幼兒學習評量表模組】(全新升級版)
        ========================================================================= -->
   <div id="sectionEvaluation" class="hidden">
     
-    <!-- 評量表操作與幼兒切換列 (no-print) -->
+    <!-- 評量表操作與幼兒管理列 (no-print) -->
     <section class="no-print max-w-5xl mx-auto mb-6 bg-white p-5 rounded-xl shadow-md border-2 border-indigo-200">
+      
+      <!-- 幼兒選擇與內嵌新增列 (解決圖七不用彈窗) -->
       <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b">
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-bold text-slate-800">👶 選擇評量幼兒：</span>
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold text-slate-700">👶 選擇評量幼兒：</span>
           <select id="selectStudent" onchange="loadStudentEval(this.value)" class="border-2 border-indigo-500 rounded p-1.5 text-xs font-bold bg-indigo-50 text-indigo-900">
-            <!-- JS 動態生成 15 位幼兒清單 -->
+            <!-- JS 動態生成 -->
           </select>
-          <button type="button" onclick="addNewStudentPrompt()" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs border font-medium">
-            ＋ 新增幼兒
-          </button>
+          
+          <!-- 圖七：內嵌直接輸入新增，不彈遮擋視窗 -->
+          <div class="inline-flex items-center border border-slate-300 rounded px-2 py-1 bg-slate-50 gap-1">
+            <input type="text" id="inlineNewStudentName" placeholder="輸入姓名新增" class="text-xs bg-transparent border-none outline-none w-24">
+            <button type="button" onclick="addNewStudentInline()" class="px-2 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-bold">
+              ＋ 加入名單
+            </button>
+          </div>
         </div>
         <div class="text-xs text-slate-500">
-          評量等第：熟練(4分) ｜ 發展中(3分) ｜ 需協助(2分) ｜ 未發展(1分)
+          評量等第：熟練(V) ｜ 發展中(V) ｜ 需協助(V) ｜ 未發展(V)
         </div>
       </div>
 
-      <!-- 基本資料編輯 -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-4">
-        <div>
-          <label class="block font-bold mb-1 text-slate-600">活動名稱：</label>
-          <input type="text" id="evalActivityName" value="小腳ㄚ逛社區" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded">
-        </div>
+      <!-- 基本資料編輯 (自動連動週誌資料) -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5 text-xs mb-4">
         <div>
           <label class="block font-bold mb-1 text-slate-600">班級：</label>
-          <input type="text" id="evalClassName" value="袋鼠班" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded">
+          <input type="text" id="evalClassName" value="" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded" placeholder="例: 袋鼠班">
         </div>
         <div>
-          <label class="block font-bold mb-1 text-slate-600">評量期間：</label>
-          <input type="text" id="evalPeriod" value="113/08/12～113/10/31" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded font-mono">
+          <label class="block font-bold mb-1 text-slate-600">活動名稱 (連動主題)：</label>
+          <input type="text" id="evalActivityName" value="" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded" placeholder="例: 小腳ㄚ逛社區">
         </div>
         <div>
-          <label class="block font-bold mb-1 text-slate-600">評量教師：</label>
-          <input type="text" id="evalTeachers" value="李晏婷、陳聖勳" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded">
+          <label class="block font-bold mb-1 text-slate-600">教師 (連動週誌)：</label>
+          <input type="text" id="evalTeachers" value="" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block font-bold mb-1 text-slate-600">評量期間 (自動記憶)：</label>
+          <div class="flex gap-1 items-center">
+            <input type="date" id="evalDateStart" onchange="autoFillEvalPeriod()" class="border p-1 rounded text-xs">
+            <span>~</span>
+            <input type="date" id="evalDateEnd" onchange="autoFillEvalPeriod()" class="border p-1 rounded text-xs">
+            <input type="text" id="evalPeriod" value="113/08/12～113/10/31" oninput="saveAndSyncEvalPeriod(this.value)" class="w-full border p-1.5 rounded text-xs font-mono">
+          </div>
         </div>
       </div>
 
-      <!-- 快速評分勾選表 (12項指標) -->
+      <!-- 快速評分與評量項目編輯區 (支援圖十：折疊查看週誌已選指標) -->
       <div class="mb-4">
-        <div class="font-bold text-xs text-slate-700 mb-2">點選等第快速評分 (點選直接在 A4 表格對應欄位打「V」)：</div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="font-bold text-xs text-slate-700">指標評量項目編輯與等第勾選：</span>
+          <span class="text-[11px] text-slate-400">💡 點擊「展開週誌參考」可直接挑選週誌已用指標帶入</span>
+        </div>
         <div class="space-y-2 text-xs" id="evalRubricEditor">
-          <!-- JS 動態產生 12 項指標快速打分列 -->
+          <!-- JS 動態生成 12 項指標與折疊選擇器 -->
         </div>
       </div>
 
-      <!-- 評語與文字編輯 -->
+      <!-- 評語與文字編輯 (含 AI 語意輔助非遮擋小抽屜) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
         <div>
-          <label class="block font-bold mb-1 text-slate-700">主題課程引言：</label>
-          <textarea id="evalCurriculumIntro" rows="3" oninput="syncEvalPreview()" class="w-full border p-2 rounded">這學期的主題課程我們透過社區探索引導幼生從自身經驗出發，逐步深入了解學校周遭環境。起初，幼生對活動的投入度較低，但在老師的引導下，他們逐漸展現出主動探索的好奇心，也慢慢增進幼生對社區的認同感，培養他們關懷社區、回饋社區的意識。</textarea>
+          <div class="flex justify-between items-center mb-1">
+            <label class="font-bold text-slate-700">主題課程引言：</label>
+            <button type="button" onclick="toggleAiAssistant('intro')" class="text-purple-600 hover:text-purple-700 font-bold flex items-center gap-0.5 text-[11px]">
+              ✨ AI 語意編寫輔助
+            </button>
+          </div>
+          <textarea id="evalCurriculumIntro" rows="3" oninput="syncEvalPreview()" class="w-full border p-2 rounded" placeholder="填寫主題引言..."></textarea>
+          <!-- 非遮擋 AI 輔助推薦抽屜 -->
+          <div id="aiDrawer-intro" class="hidden mt-1 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-900 space-y-1">
+            <div class="font-bold text-purple-700">推薦潤飾範例 (點擊直接帶入)：</div>
+            <div onclick="applyAiText('intro', 1)" class="p-1.5 bg-white border rounded hover:bg-purple-100 cursor-pointer">
+              「這學期的主題課程我們透過社區探索引導幼生從自身經驗出發，逐步深入了解學校周遭環境。在老師的引導下，孩子們展現出主動探索的好奇心，也增進了對社區的認同與關懷意識。」
+            </div>
+          </div>
         </div>
+
         <div>
-          <label class="block font-bold mb-1 text-slate-700">老師的話（個別評語）：</label>
-          <textarea id="evalTeacherComment" rows="3" oninput="syncEvalPreview()" class="w-full border p-2 rounded" placeholder="填寫對該名幼兒的觀察與鼓勵..."></textarea>
+          <div class="flex justify-between items-center mb-1">
+            <label class="font-bold text-slate-700">老師的話（個別評語）：</label>
+            <button type="button" onclick="toggleAiAssistant('comment')" class="text-purple-600 hover:text-purple-700 font-bold flex items-center gap-0.5 text-[11px]">
+              ✨ AI 評語修飾建議
+            </button>
+          </div>
+          <textarea id="evalTeacherComment" rows="3" oninput="syncEvalPreview()" class="w-full border p-2 rounded" placeholder="填寫老師的話..."></textarea>
+          <div id="aiDrawer-comment" class="hidden mt-1 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-900 space-y-1">
+            <div class="font-bold text-purple-700">AI 評語修飾推薦 (點擊帶入)：</div>
+            <div id="aiCommentSuggestions" class="space-y-1"></div>
+          </div>
         </div>
+
         <div>
-          <label class="block font-bold mb-1 text-slate-700">我學到...孩子說：</label>
-          <input type="text" id="evalChildSay" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded" placeholder="☆我學到...孩子說:">
+          <!-- 標題可編輯需求 -->
+          <div class="flex gap-1 items-center mb-1">
+            <input type="text" id="evalChildSayTitle" value="☆我學到...孩子說:" oninput="syncEvalPreview()" class="font-bold text-slate-700 border-b border-dashed border-slate-400 bg-transparent text-xs w-44">
+            <span class="text-[10px] text-slate-400">(標題可改)</span>
+          </div>
+          <input type="text" id="evalChildSayContent" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded" placeholder="孩子分享的話...">
         </div>
+
         <div>
           <label class="block font-bold mb-1 text-slate-700">家長的話：</label>
           <input type="text" id="evalParentComment" oninput="syncEvalPreview()" class="w-full border p-1.5 rounded" placeholder="家長回饋...">
@@ -483,53 +537,51 @@
     </section>
 
     <!-- =========================================================================
-         正式 A4 幼兒學習評量表 (1:1 還原最初上傳的表格格式)
+         正式 A4 幼兒學習評量表 (嚴格單頁鎖定，對齊圖十一與圖十二)
          ========================================================================= -->
-    <main class="print-page max-w-5xl mx-auto bg-white p-4 md:p-8 shadow-lg border border-slate-300 relative">
+    <main class="print-page max-w-5xl mx-auto bg-white p-4 md:p-6 shadow-lg border border-slate-300 relative" style="font-family: 'DFKai-SB', '標楷體';">
       
       <div class="no-print absolute top-2 left-2 px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded">
         📄【評量表標準模板預覽】
       </div>
 
-      <!-- 表頭 -->
+      <!-- 表頭 (對齊圖十一) -->
       <div class="text-center mb-1">
-        <h2 class="text-xl font-bold tracking-widest" style="font-family: 'DFKai-SB', '標楷體';">
-          <span id="viewEvalSchoolName">新北市私立富雅幼兒園</span>
-        </h2>
-        <h3 class="text-base font-bold tracking-wider mt-0.5" style="font-family: 'DFKai-SB', '標楷體';">
-          <span id="viewEvalYear">113</span> 學年度<span id="viewEvalSemester">第一學期</span>　大班 幼兒學習評量表
+        <h2 class="text-xl font-bold tracking-widest" id="viewEvalSchoolName">新北市私立富雅幼兒園</h2>
+        <h3 class="text-base font-bold tracking-wider mt-0.5">
+          <span id="viewEvalYear">113</span> 學年度<span id="viewEvalSemester">第一學期</span>　<span id="viewEvalClassLevel">大班</span> 幼兒學習評量表
         </h3>
       </div>
 
-      <!-- 基本資料 -->
+      <!-- 基本資料 (對齊圖十一) -->
       <table class="official-table text-xs md:text-sm mb-0">
         <colgroup>
-          <col style="width: 12%;">
-          <col style="width: 21%;">
-          <col style="width: 12%;">
-          <col style="width: 21%;">
-          <col style="width: 12%;">
+          <col style="width: 11%;">
           <col style="width: 22%;">
+          <col style="width: 12%;">
+          <col style="width: 21%;">
+          <col style="width: 11%;">
+          <col style="width: 23%;">
         </colgroup>
         <tbody>
           <tr>
             <td class="font-bold text-center">班　級：</td>
-            <td id="viewEvalClass">袋鼠班</td>
+            <td id="viewEvalClass"></td>
             <td class="font-bold text-center">活動名稱：</td>
-            <td id="viewEvalActivity">小腳ㄚ逛社區</td>
+            <td id="viewEvalActivity"></td>
             <td class="font-bold text-center">教　師：</td>
-            <td id="viewEvalTeachers">李晏婷、陳聖勳</td>
+            <td id="viewEvalTeachers"></td>
           </tr>
           <tr>
             <td class="font-bold text-center">幼兒姓名：</td>
-            <td class="font-bold text-base" id="viewEvalStudentName">余秉宥</td>
+            <td class="font-bold text-base" id="viewEvalStudentName"></td>
             <td class="font-bold text-center">評量期間：</td>
-            <td colspan="3" class="font-mono" id="viewEvalPeriod">113/08/12～113/10/31</td>
+            <td colspan="3" class="font-mono" id="viewEvalPeriod"></td>
           </tr>
         </tbody>
       </table>
 
-      <!-- 評量指標核心表格 (12 項標準領域指標) -->
+      <!-- 評量指標核心表格 (12項指標 ＋ 預設空白方框/勾選) -->
       <table class="official-table text-xs mt-[-1.2px]">
         <colgroup>
           <col style="width: 14%;"> <!-- 領域 -->
@@ -543,41 +595,44 @@
           <tr class="text-center font-bold bg-slate-50">
             <th rowspan="2">領域</th>
             <th rowspan="2">評量項目</th>
-            <th colspan="4" class="py-1">幼兒表現</th>
+            <th colspan="4" class="py-0.5">幼兒表現</th>
           </tr>
           <tr class="text-center font-bold text-[11px] bg-slate-50">
-            <th class="py-1">熟練</th>
-            <th class="py-1">發展中</th>
-            <th class="py-1">需協助</th>
-            <th class="py-1">未發展</th>
+            <th class="py-0.5">熟練</th>
+            <th class="py-0.5">發展中</th>
+            <th class="py-0.5">需協助</th>
+            <th class="py-0.5">未發展</th>
           </tr>
         </thead>
         <tbody id="viewEvalTableBody">
-          <!-- JS 動態生成 6 領域 12 指標打勾列 -->
+          <!-- JS 動態生成 12 列 (對照圖十一) -->
         </tbody>
       </table>
 
-      <!-- 底部引言、老師的話、家長的話與簽名 -->
-      <table class="official-table text-xs mt-[-1.2px]">
+      <!-- 底部引言、老師的話、家長的話與簽章 (嚴格單頁鎖定高度，字多自動縮小) -->
+      <table class="official-table text-xs mt-[-1.2px]" style="height: 190px;">
         <colgroup>
-          <col style="width: 60%;">
-          <col style="width: 40%;">
+          <col style="width: 55%;">
+          <col style="width: 45%;">
         </colgroup>
         <tbody>
-          <tr>
-            <td class="align-top p-2 leading-relaxed">
-              <div class="whitespace-pre-line text-slate-800" id="viewEvalIntro"></div>
-              <div class="whitespace-pre-line font-medium text-slate-900 mt-2" id="viewEvalTeacherComment"></div>
-              <div class="font-bold text-indigo-900 mt-2" id="viewEvalChildSay"></div>
+          <tr style="height: 155px;">
+            <td class="align-top p-2 leading-relaxed" style="overflow: hidden;">
+              <div class="whitespace-pre-line text-slate-800 text-[11px] leading-tight" id="viewEvalIntro"></div>
+              <!-- 老師的話 (彈性字體縮小容器) -->
+              <div class="whitespace-pre-line font-medium text-slate-900 mt-1.5 leading-tight" id="viewEvalTeacherCommentContainer">
+                <span id="viewEvalTeacherComment"></span>
+              </div>
+              <div class="font-bold text-slate-900 mt-1 text-[11px]" id="viewEvalChildSay"></div>
             </td>
             <td class="align-top p-2">
               <div class="font-bold mb-1">家長的話：</div>
-              <div class="text-slate-700 min-h-[90px]" id="viewEvalParentComment"></div>
+              <div class="text-slate-700 min-h-[80px]" id="viewEvalParentComment"></div>
             </td>
           </tr>
-          <tr>
-            <td class="p-2 font-bold">老師簽章：<span class="inline-block w-40 border-b border-black"></span></td>
-            <td class="p-2 font-bold">家長簽章：<span class="inline-block w-40 border-b border-black"></span></td>
+          <tr style="height: 35px;">
+            <td class="p-1.5 font-bold align-middle">老師簽章：<span class="inline-block w-40 border-b border-black"></span></td>
+            <td class="p-1.5 font-bold align-middle">家長簽章：<span class="inline-block w-40 border-b border-black"></span></td>
           </tr>
         </tbody>
       </table>
@@ -1181,7 +1236,7 @@
     // ==========================================
     // 雲端 GAS 串接設定
     // ==========================================
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxd9Q4r1sVe4T_00CPeRvNOYMvwNkmHJib4leLmRiONMear0grl946FirDAy_f78XmP/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxsW2djjgivz09jX652EaNDwOvx8n-xlxrclV3A5_ulO-MBe_oUazd_BaksovxUqgU/exec";
 
     function serializeActivityIndicators(actKey) {
       return activityBlocks[actKey]
@@ -1403,63 +1458,47 @@
     });
 
     // =========================================================================
-    // 幼兒學習評量表核心邏輯 (支援 15 位幼兒名單、12 項指標與評語連動)
+    // 幼兒學習評量表核心邏輯 (支援圖十指標折疊、AI建議、自訂項目與單頁字體縮放)
     // =========================================================================
     
-    // 6 大領域 12 項官方評量項目
-    const evalIndicatorsTemplate = [
-      { domain: "身體動作與健康", domainRowSpan: 2, item: "1. 到外戶進行探索，幼兒能覺察與辨別危險，保護自己及他人的安全" },
-      { domain: "身體動作與健康", domainRowSpan: 0, item: "2. 在建構山佳地圖活動中，透過kapla、組合建構，能敏捷使用各種素材、工具或器材進行搭建" },
-      { domain: "認知", domainRowSpan: 2, item: "1. 在『山佳地圖』活動中，能以圖像或符合紀錄生活物件的多項訊息" },
-      { domain: "認知", domainRowSpan: 0, item: "2. 在『留下腳印(二)』活動中，能與同伴討論解決問題的方法，並與他人合作實際執行" },
-      { domain: "語文", domainRowSpan: 2, item: "1. 在『學校的故事』活動中，能理解團體互動中輪流說話的規則" },
-      { domain: "語文", domainRowSpan: 0, item: "2. 在邀請Mommy分享活動中，幼兒能合宜詮釋互動對象的表情和肢體動作" },
-      { domain: "社會", domainRowSpan: 2, item: "1. 在『我的鄰居（一）』活動中，能探索社區中的人事物、活動、場所及其與自己的關係" },
-      { domain: "社會", domainRowSpan: 0, item: "2. 在『圖書館』活動中，能因應情境，表現合宜的生活禮儀" },
-      { domain: "情緒", domainRowSpan: 2, item: "1. 在『小市場』活動中，能以符合社會文化的方式來表達自己的情緒" },
-      { domain: "情緒", domainRowSpan: 0, item: "2. 在『趴趴GO』活動中，能運用等待或改變想法的策略調解自己的情緒" },
-      { domain: "美感", domainRowSpan: 2, item: "1. 進行信件創作，能運用各種視覺藝術素材與工具的特性。" },
-      { domain: "美感", domainRowSpan: 0, item: "2. 使用大自然的鬆散素材，玩索各種藝術媒介，發揮想像並享受自我表現的樂趣" }
+    // 6 大領域 12 項標準項目 (文字可編輯)
+    let evalRubricItems = [
+      { id: 0, domain: "身體動作與健康", domainRowSpan: 2, item: "1. 到外戶進行探索，幼兒能覺察與辨別危險，保護自己及他人的安全" },
+      { id: 1, domain: "身體動作與健康", domainRowSpan: 0, item: "2. 在建構山佳地圖活動中，透過kapla、組合建構，能敏捷使用各種素材、工具或器材進行搭建" },
+      { id: 2, domain: "認知", domainRowSpan: 2, item: "1. 在『山佳地圖』活動中，能以圖像或符合紀錄生活物件的多項訊息" },
+      { id: 3, domain: "認知", domainRowSpan: 0, item: "2. 在『留下腳印(二)』活動中，能與同伴討論解決問題的方法，並與他人合作實際執行" },
+      { id: 4, domain: "語文", domainRowSpan: 2, item: "1. 在『學校的故事』活動中，能理解團體互動中輪流說話的規則" },
+      { id: 5, domain: "語文", domainRowSpan: 0, item: "2. 在邀請Mommy分享活動中，幼兒能合宜詮釋互動對象的表情和肢體動作" },
+      { id: 6, domain: "社會", domainRowSpan: 2, item: "1. 在『我的鄰居（一）』活動中，能探索社區中的人事物、活動、場所及其與自己的關係" },
+      { id: 7, domain: "社會", domainRowSpan: 0, item: "2. 在『圖書館』活動中，能因應情境，表現合宜的生活禮儀" },
+      { id: 8, domain: "情緒", domainRowSpan: 2, item: "1. 在『小市場』活動中，能以符合社會文化的方式來表達自己的情緒" },
+      { id: 9, domain: "情緒", domainRowSpan: 0, item: "2. 在『趴趴GO』活動中，能運用等待或改變想法的策略調解自己的情緒" },
+      { id: 10, domain: "美感", domainRowSpan: 2, item: "1. 進行信件創作，能運用各種視覺藝術素材與工具的特性。" },
+      { id: 11, domain: "美感", domainRowSpan: 0, item: "2. 使用大自然的鬆散素材，玩索各種藝術媒介，發揮想像並享受自我表現的樂趣" }
     ];
 
-    // 內建您提供的 15 位幼兒原始資料
+    // 幼兒資料庫
     let studentsEvalDB = {
       "余秉宥": {
         levels: ["熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練"],
         comment: "秉宥真是個貼心又聰明的小孩！在校園周邊之社區地圖搭建過程中，他展現了細心的觀察力；在團隊合作時，他又能化身為一位小小調解員，幫助大家解決問題。雖然偶爾會有些小調皮，但這些都是他成長過程中的一部分。",
-        childSay: "很開心，找到更快的路線",
+        childSayTitle: "☆我學到...孩子說:",
+        childSayContent: "很開心，找到更快的路線",
         parentComment: ""
       },
       "陳姸安": {
         levels: ["發展中", "發展中", "熟練", "發展中", "發展中", "熟練", "發展中", "熟練", "熟練", "熟練", "熟練", "熟練"],
         comment: "姸安在這次的社區探索活動中表現得非常熱情！她不僅踴躍回答問題，還對周遭環境充滿好奇，積極參與各項活動。雖然偶爾會有些小失誤，但她的熱情讓我們看到了她對這次活動的投入。",
-        childSay: "到外面走走時看到不同的文字",
-        parentComment: ""
-      },
-      "劉秉恩": {
-        levels: ["發展中", "發展中", "需協助", "需協助", "需協助", "發展中", "發展中", "熟練", "發展中", "需協助", "發展中", "發展中"],
-        comment: "秉恩，雖然你在社區探索活動中一開始會需要一些幫助，但我們發現你只要投入其中，就能學到很多東西。你的表達能力也在逐漸進步。相信只要持續鼓勵，你一定能更主動地參與活動。",
-        childSay: "喜歡這次的課程，喜歡搭建積木",
-        parentComment: ""
-      },
-      "凃子宣": {
-        levels: ["發展中", "發展中", "發展中", "發展中", "發展中", "熟練", "發展中", "熟練", "發展中", "發展中", "熟練", "熟練"],
-        comment: "子宣這次的社區探索之旅，讓我們看到了她穩重、積極的一面。雖然偶爾會受到身體狀況影響，但她的表現已經非常優秀了。相信透過持續的參與，她會變得越來越自信。",
-        childSay: "看到火車..",
-        parentComment: ""
-      },
-      "鄭理之": {
-        levels: ["熟練", "熟練", "熟練", "發展中", "發展中", "發展中", "發展中", "熟練", "發展中", "熟練", "發展中", "熟練"],
-        comment: "理之在課程中雖然有時需要老師多一些提醒，但我們看到他已經穩定許多。他對搭建和組裝的興趣非常濃厚，甚至能啟發其他小朋友。相信只要持續鼓勵，他一定能更自發地投入活動中。",
-        childSay: "警察局很厲害，因為有槍。畫畫搭建更厲害了~",
+        childSayTitle: "☆我學到...孩子說:",
+        childSayContent: "到外面走走時看到不同的文字",
         parentComment: ""
       }
     };
 
     let currentStudentName = "余秉宥";
-    let activeMainTab = "weekly"; // 'weekly' 或 'eval'
+    let activeMainTab = "weekly";
 
-    // 切換主分頁 (週誌 ｜ 評量表)
+    // 主分頁切換
     function switchMainTab(tabKey) {
       activeMainTab = tabKey;
       const secWeekly = document.getElementById('sectionWeeklyLog');
@@ -1481,8 +1520,22 @@
       }
     }
 
-    // 初始化評量表模組
+    // 初始化評量表
     function initEvaluationModule() {
+      // 1. 自動連動週誌資料
+      document.getElementById('evalActivityName').value = document.getElementById('formTheme').value || '小腳ㄚ逛社區';
+      document.getElementById('evalTeachers').value = document.getElementById('formTeacher').value || '李晏婷、陳聖勳';
+
+      // 2. 評量日期記憶還原
+      const savedPeriod = localStorage.getItem('fuya_eval_saved_period') || '113/08/12～113/10/31';
+      document.getElementById('evalPeriod').value = savedPeriod;
+
+      // 3. 渲染幼兒清單下拉選單
+      renderStudentDropdown();
+      loadStudentEval(currentStudentName);
+    }
+
+    function renderStudentDropdown() {
       const select = document.getElementById('selectStudent');
       select.innerHTML = '';
       Object.keys(studentsEvalDB).forEach(name => {
@@ -1492,73 +1545,214 @@
         select.appendChild(opt);
       });
       select.value = currentStudentName;
-      loadStudentEval(currentStudentName);
     }
 
-    // 載入特定幼兒的評量數據
+    // 內嵌新增幼兒 (解決圖七不用遮擋彈窗)
+    function addNewStudentInline() {
+      const input = document.getElementById('inlineNewStudentName');
+      const name = input.value.trim();
+      if (!name) return;
+
+      if (!studentsEvalDB[name]) {
+        studentsEvalDB[name] = {
+          levels: Array(12).fill("熟練"),
+          comment: `${name}在這次的活動中表現良好，能積極參與並與同儕良好互動。`,
+          childSayTitle: "☆我學到...孩子說:",
+          childSayContent: "",
+          parentComment: ""
+        };
+        currentStudentName = name;
+        renderStudentDropdown();
+        loadStudentEval(name);
+        input.value = '';
+      } else {
+        alert("該幼兒姓名已在名單中！");
+      }
+    }
+
+    // 評量期間自動記憶
+    function saveAndSyncEvalPeriod(val) {
+      if (val) localStorage.setItem('fuya_eval_saved_period', val);
+      syncEvalPreview();
+    }
+
+    function autoFillEvalPeriod() {
+      const s = document.getElementById('evalDateStart').value;
+      const e = document.getElementById('evalDateEnd').value;
+      if (s && e) {
+        const toTW = d => { const [y, m, d2] = d.split('-'); return `${parseInt(y)-1911}/${m}/${d2}`; };
+        const periodStr = `${toTW(s)}～${toTW(e)}`;
+        document.getElementById('evalPeriod').value = periodStr;
+        saveAndSyncEvalPeriod(periodStr);
+      }
+    }
+
+    // 載入幼兒評量資料
     function loadStudentEval(name) {
       currentStudentName = name;
       const data = studentsEvalDB[name] || {
-        levels: Array(12).fill("發展中"),
+        levels: Array(12).fill(""),
         comment: "",
-        childSay: "",
+        childSayTitle: "☆我學到...孩子說:",
+        childSayContent: "",
         parentComment: ""
       };
 
       document.getElementById('evalTeacherComment').value = data.comment;
-      document.getElementById('evalChildSay').value = data.childSay;
-      document.getElementById('evalParentComment').value = data.parentComment || '';
+      document.getElementById('evalChildSayTitle').value = data.childSayTitle || "☆我學到...孩子說:";
+      document.getElementById('evalChildSayContent').value = data.childSayContent || "";
+      document.getElementById('evalParentComment').value = data.parentComment || "";
 
       renderEvalRubricEditor(data.levels);
       syncEvalPreview();
     }
 
-    // 渲染 12 項指標編輯按鈕
+    // 圖十：取得週誌中該領域曾使用過的所有指標
+    function getUsedWeeklyIndicatorsByDomain(domainKeyword) {
+      const shortDomain = domainKeyword.charAt(0);
+      const used = new Set();
+      // 從雲端紀錄與當前活動提取
+      if (Array.isArray(cachedCloudLogs)) {
+        cachedCloudLogs.forEach(row => {
+          ['活動一指標', '活動二指標', '活動三指標'].forEach(col => {
+            const val = row[col];
+            if (val && val.includes(shortDomain)) {
+              val.split(';;').forEach(p => {
+                if (p.trim()) used.add(p.replace('\n', ' '));
+              });
+            }
+          });
+        });
+      }
+      return Array.from(used);
+    }
+
+    // 渲染評量項目與圖十折疊參考
     function renderEvalRubricEditor(levels) {
       const container = document.getElementById('evalRubricEditor');
       container.innerHTML = '';
       const grades = ["熟練", "發展中", "需協助", "未發展"];
 
-      evalIndicatorsTemplate.forEach((item, idx) => {
-        const curLevel = levels[idx] || "發展中";
+      evalRubricItems.forEach((rubric, idx) => {
+        const curLevel = levels[idx] || "";
         const row = document.createElement('div');
-        row.className = 'flex flex-wrap items-center justify-between p-2 bg-slate-50 border rounded gap-2';
+        row.className = 'p-2.5 bg-slate-50 border rounded-lg space-y-1.5';
+
+        // 該領域在週誌中用過的指標清單 (圖十需求)
+        const usedIndicators = getUsedWeeklyIndicatorsByDomain(rubric.domain);
+        const refListHtml = usedIndicators.length > 0 
+          ? usedIndicators.map(ind => `
+              <div onclick="applyIndicatorToRubric(${idx}, '${ind.replace(/'/g, "\\'")}')" class="p-1 bg-white border border-indigo-200 rounded text-[11px] text-indigo-800 hover:bg-indigo-100 cursor-pointer flex items-center justify-between">
+                <span>${ind}</span>
+                <span class="text-indigo-600 font-bold">帶入 ➔</span>
+              </div>
+            `).join('')
+          : '<div class="text-[11px] text-slate-400">週誌中暫無此領域的使用紀錄</div>';
+
         row.innerHTML = `
-          <div class="text-slate-800 font-medium max-w-xl truncate">
-            <span class="font-bold text-indigo-700">[${item.domain}]</span> ${item.item}
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="font-bold text-indigo-700">[${rubric.domain}] 項目 ${idx % 2 + 1}：</span>
+            <div class="flex items-center gap-1">
+              ${grades.map(g => `
+                <button type="button" onclick="setEvalGrade(${idx}, '${g}')" 
+                  class="px-2 py-0.5 rounded text-xs font-bold border transition ${curLevel === g ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 hover:bg-slate-100'}">
+                  ${g}
+                </button>
+              `).join('')}
+            </div>
           </div>
+
+          <!-- 項目文字輸入框 (可自由修改) -->
           <div class="flex items-center gap-1">
-            ${grades.map(g => `
-              <button type="button" onclick="setEvalGrade(${idx}, '${g}')" 
-                class="px-2 py-0.5 rounded text-xs font-bold border transition ${curLevel === g ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 hover:bg-slate-100'}">
-                ${g}
-              </button>
-            `).join('')}
+            <input type="text" value="${rubric.item}" oninput="updateRubricItemText(${idx}, this.value)" class="w-full border p-1 rounded text-xs bg-white text-slate-800 font-medium">
+            <button type="button" onclick="toggleIndicatorRef(${idx})" class="px-2 py-1 bg-indigo-50 border border-indigo-300 text-indigo-700 rounded text-[11px] font-bold whitespace-nowrap hover:bg-indigo-100">
+              💡 圖十：指標參考 ▼
+            </button>
+          </div>
+
+          <!-- 圖十：可折疊指標抽屜 (不佔空間) -->
+          <div id="indRefDrawer-${idx}" class="hidden p-2 bg-indigo-50/70 border border-indigo-200 rounded space-y-1 mt-1">
+            <div class="font-bold text-[11px] text-indigo-900">週誌中已使用的【${rubric.domain}】指標 (點擊直接帶入編寫)：</div>
+            <div class="space-y-1 max-h-28 overflow-y-auto">${refListHtml}</div>
           </div>
         `;
         container.appendChild(row);
       });
     }
 
-    // 變更某指標等第
+    function toggleIndicatorRef(idx) {
+      document.getElementById(`indRefDrawer-${idx}`).classList.toggle('hidden');
+    }
+
+    function applyIndicatorToRubric(idx, text) {
+      evalRubricItems[idx].item = `${idx % 2 + 1}. 在活動中，${text}`;
+      renderEvalRubricEditor(studentsEvalDB[currentStudentName]?.levels || []);
+      syncEvalPreview();
+    }
+
+    function updateRubricItemText(idx, val) {
+      evalRubricItems[idx].item = val;
+      syncEvalPreview();
+    }
+
     function setEvalGrade(index, grade) {
       if (!studentsEvalDB[currentStudentName]) {
-        studentsEvalDB[currentStudentName] = { levels: Array(12).fill("發展中"), comment: "", childSay: "" };
+        studentsEvalDB[currentStudentName] = { levels: Array(12).fill("") };
       }
       studentsEvalDB[currentStudentName].levels[index] = grade;
       renderEvalRubricEditor(studentsEvalDB[currentStudentName].levels);
       syncEvalPreview();
     }
 
-    // 同步評量表 A4 表格預覽
+    // AI 語意非遮擋推薦面板
+    function toggleAiAssistant(type) {
+      const drawer = document.getElementById(`aiDrawer-${type}`);
+      drawer.classList.toggle('hidden');
+      if (type === 'comment') {
+        const box = document.getElementById('aiCommentSuggestions');
+        box.innerHTML = `
+          <div onclick="applyAiText('comment', 1)" class="p-1.5 bg-white border rounded hover:bg-purple-100 cursor-pointer">
+            「${currentStudentName}在這次的社區探索中表現積極，細心觀察周遭事物，並能主動參與討論與團隊合作，進步非常顯著！」
+          </div>
+          <div onclick="applyAiText('comment', 2)" class="p-1.5 bg-white border rounded hover:bg-purple-100 cursor-pointer">
+            「${currentStudentName}是個貼心懂事的孩子，在建構活動中展現了豐富的創造力，與同伴意見相左時也能學會溝通與協調。」
+          </div>
+        `;
+      }
+    }
+
+    function applyAiText(type, opt) {
+      if (type === 'intro') {
+        document.getElementById('evalCurriculumIntro').value = "這學期的主題課程我們透過社區探索引導幼生從自身經驗出發，逐步深入了解學校周遭環境。在老師的引導下，孩子們展現出主動探索的好奇心，也增進了對社區的認同與關懷意識。";
+      } else {
+        const text = opt === 1 
+          ? `${currentStudentName}在這次的社區探索中表現積極，細心觀察周遭事物，並能主動參與討論與團隊合作，進步非常顯著！`
+          : `${currentStudentName}是個貼心懂事的孩子，在建構活動中展現了豐富的創造力，與同伴意見相左時也能學會溝通與協調。`;
+        document.getElementById('evalTeacherComment').value = text;
+      }
+      document.getElementById(`aiDrawer-${type}`).classList.add('hidden');
+      syncEvalPreview();
+    }
+
+    // 圖一：依主要概念切換篩選指標明細
+    let currentConceptFilter = 'ALL';
+    function filterDetailsByConcept(conceptVal) {
+      currentConceptFilter = conceptVal;
+      renderDetailsList();
+    }
+
+    // 同步 A4 評量表表格預覽 (含字體自適應縮小，確保單頁列印圖十一)
     function syncEvalPreview() {
+      // 1. 同步表頭
       const school = document.getElementById('formSchoolName')?.value || '新北市私立富雅幼兒園';
       const year = document.getElementById('formYear')?.value || '113';
       const semester = document.getElementById('formSemester')?.value || '第一學期';
+      const classLevel = document.getElementById('formClassLevel')?.value || '大班';
 
       document.getElementById('viewEvalSchoolName').innerText = school;
       document.getElementById('viewEvalYear').innerText = year;
       document.getElementById('viewEvalSemester').innerText = semester;
+      document.getElementById('viewEvalClassLevel').innerText = classLevel;
 
       document.getElementById('viewEvalClass').innerText = document.getElementById('evalClassName').value;
       document.getElementById('viewEvalActivity').innerText = document.getElementById('evalActivityName').value;
@@ -1566,65 +1760,99 @@
       document.getElementById('viewEvalStudentName').innerText = currentStudentName;
       document.getElementById('viewEvalPeriod').innerText = document.getElementById('evalPeriod').value;
 
-      // 渲染 A4 表格打勾列
+      // 2. 渲染核心 12 項表格 (吻合圖十一格式)
       const tbody = document.getElementById('viewEvalTableBody');
       tbody.innerHTML = '';
       const grades = ["熟練", "發展中", "需協助", "未發展"];
       const currentLevels = studentsEvalDB[currentStudentName]?.levels || Array(12).fill("");
 
-      evalIndicatorsTemplate.forEach((item, idx) => {
+      evalRubricItems.forEach((rubric, idx) => {
         const tr = document.createElement('tr');
         const userLevel = currentLevels[idx];
 
         let domainTd = '';
-        if (item.domainRowSpan > 0) {
-          domainTd = `<td rowspan="${item.domainRowSpan}" class="font-bold text-center align-middle bg-slate-50">${item.domain}</td>`;
+        if (rubric.domainRowSpan > 0) {
+          domainTd = `<td rowspan="${rubric.domainRowSpan}" class="font-bold text-center align-middle bg-slate-50">${rubric.domain}</td>`;
         }
 
+        // 對齊圖十一：若勾選顯示 V，未勾選顯示空方框 □
         const checksTds = grades.map(g => {
           const isChecked = (userLevel === g);
-          return `<td class="text-center font-bold text-base ${isChecked ? 'text-blue-700' : ''}">${isChecked ? 'V' : ''}</td>`;
+          return `<td class="text-center font-bold text-sm ${isChecked ? 'text-blue-700 font-mono text-base' : 'text-slate-300'}">${isChecked ? 'V' : '□'}</td>`;
         }).join('');
 
         tr.innerHTML = `
           ${domainTd}
-          <td class="p-1.5 leading-tight">${item.item}</td>
+          <td class="p-1 leading-tight">${rubric.item}</td>
           ${checksTds}
         `;
         tbody.appendChild(tr);
       });
 
-      // 同步文字
+      // 3. 同步文字與彈性縮減字體 (防止超出單頁 A4)
       document.getElementById('viewEvalIntro').innerText = document.getElementById('evalCurriculumIntro').value;
-      document.getElementById('viewEvalTeacherComment').innerText = document.getElementById('evalTeacherComment').value;
-      document.getElementById('viewEvalChildSay').innerText = document.getElementById('evalChildSay').value ? `☆我學到...孩子說:${document.getElementById('evalChildSay').value}` : '';
+      
+      const commentText = document.getElementById('evalTeacherComment').value;
+      const commentEl = document.getElementById('viewEvalTeacherComment');
+      commentEl.innerText = commentText;
+
+      // 字數超過 100 字自動縮小為 10px，避免推出第二頁
+      if (commentText.length > 130) {
+        commentEl.className = 'text-[9.5px] leading-tight';
+      } else if (commentText.length > 90) {
+        commentEl.className = 'text-[10.5px] leading-tight';
+      } else {
+        commentEl.className = 'text-xs leading-normal';
+      }
+
+      const childTitle = document.getElementById('evalChildSayTitle').value || '☆我學到...孩子說:';
+      const childContent = document.getElementById('evalChildSayContent').value;
+      document.getElementById('viewEvalChildSay').innerText = childContent ? `${childTitle} ${childContent}` : '';
       document.getElementById('viewEvalParentComment').innerText = document.getElementById('evalParentComment').value;
     }
 
-    // 新增幼兒姓名
-    function addNewStudentPrompt() {
-      const name = prompt("請輸入新幼兒姓名：");
-      if (name && name.trim()) {
-        const cleanName = name.trim();
-        if (!studentsEvalDB[cleanName]) {
-          studentsEvalDB[cleanName] = {
-            levels: Array(12).fill("熟練"),
-            comment: `${cleanName}在這次的社區探索活動中表現優良...`,
-            childSay: "",
-            parentComment: ""
-          };
-          initEvaluationModule();
-          loadStudentEval(cleanName);
-        }
-      }
-    }
-
-    // 儲存按鈕動態判斷 (儲存週誌 還是 儲存評量表)
-    function saveCurrentModule() {
+    // 儲存邏輯分流 (儲存週誌 還是 儲存評量表至 Google 試算表)
+    async function saveCurrentModule() {
       if (activeMainTab === 'weekly') {
         saveWeeklyLogToCloud();
       } else {
-        alert(`✅ 【${currentStudentName}】幼兒學習評量表已儲存！`);
+        // 儲存評量表至試算表 (圖十三需求)
+        const btn = document.getElementById('btnHeaderSave');
+        btn.disabled = true;
+        btn.innerText = "⏳ 儲存評量表中...";
+
+        const payload = {
+          module: 'evaluation',
+          schoolName: document.getElementById('formSchoolName')?.value || '新北市私立富雅幼兒園',
+          year: document.getElementById('formYear')?.value || '113',
+          semester: document.getElementById('formSemester')?.value || '第一學期',
+          className: document.getElementById('evalClassName').value,
+          studentName: currentStudentName,
+          activityName: document.getElementById('evalActivityName').value,
+          period: document.getElementById('evalPeriod').value,
+          teachers: document.getElementById('evalTeachers').value,
+          levels: studentsEvalDB[currentStudentName]?.levels || Array(12).fill(""),
+          intro: document.getElementById('evalCurriculumIntro').value,
+          teacherComment: document.getElementById('evalTeacherComment').value,
+          childSayTitle: document.getElementById('evalChildSayTitle').value,
+          childSayContent: document.getElementById('evalChildSayContent').value,
+          parentComment: document.getElementById('evalParentComment').value
+        };
+
+        try {
+          await fetch(GAS_API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+          });
+          alert(`✅ 【${currentStudentName}】幼兒學習評量表已成功存入 Google 試算表（幼兒評量紀錄）！`);
+        } catch (err) {
+          alert("❌ 儲存失敗：" + err);
+        } finally {
+          btn.disabled = false;
+          btn.innerText = "💾 儲存至雲端";
+        }
       }
     }
   </script>
