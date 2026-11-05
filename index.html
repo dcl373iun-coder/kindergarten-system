@@ -522,6 +522,9 @@
       act3: null
     };
 
+    // 加上這行（放在最上方供全域調用）
+    let currentWeekCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
+
     let activeActivityKey = '';
     let currentModalAge = '大班';
     let currentModalDomain = 'ALL';
@@ -932,9 +935,7 @@
         syncPreview();
       }
     }
-
-    // 全域變數記錄當週指標數
-    let currentWeekCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
+  
 
     // 計算「雲端歷史累積 ＋ 當前編輯週」的總領域分佈
     function calculateTotalStatistics() {
