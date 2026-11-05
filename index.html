@@ -3,386 +3,575 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>富雅幼兒園 - 主題課程與週誌系統</title>
-  <!-- Tailwind CSS 快速排版 -->
+  <title>新北市私立富雅幼兒園 - 主題教學活動週誌系統</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* 嚴格吻合校園公文列印排版 */
+    @page {
+      size: A4 portrait;
+      margin: 12mm 15mm 15mm 15mm;
+    }
     @media print {
       .no-print { display: none !important; }
-      body { background: white !important; padding: 0 !important; }
-      .print-container { border: none !important; box-shadow: none !important; width: 100% !important; max-width: 100% !important; }
+      body { background: white !important; padding: 0 !important; font-family: "DFKai-SB", "BiauKai", "標楷體", serif; }
+      .print-page { 
+        box-shadow: none !important; 
+        border: none !important; 
+        width: 100% !important; 
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      /* 列印時保持表格邊框清晰且不被分頁切斷 */
+      table { page-break-inside: auto; border-collapse: collapse !important; }
+      tr { page-break-inside: avoid; page-break-after: auto; }
+      td, th { border: 1.5px solid black !important; }
+    }
+    /* 螢幕預覽樣式 */
+    .official-table {
+      border-collapse: collapse;
+      width: 100%;
+      border: 1.5px solid black;
+      font-family: "DFKai-SB", "BiauKai", "標楷體", "Microsoft JhengHei", serif;
+    }
+    .official-table td, .official-table th {
+      border: 1.2px solid black;
+      padding: 6px 8px;
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 p-4 md:p-8">
+<body class="bg-slate-100 text-slate-800 p-2 md:p-6">
 
-  <div class="max-w-5xl mx-auto">
-    <!-- 頂部導航與功能按鈕 -->
-    <header class="no-print mb-6 flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+  <!-- ======================== 頂部控制列 (no-print) ======================== -->
+  <header class="no-print max-w-5xl mx-auto mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-lg md:text-xl font-bold text-slate-900">新北市私立富雅幼兒園 - 週誌與指標管理系統</h1>
+      <p class="text-xs text-slate-500">標準校園公文模板 ｜ 大/小指標自動連動 ｜ 支援活動照片與即時領域分析</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="toggleEditDrawer()" class="px-3 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 transition">
+        ✏️ 填寫 / 編輯內容
+      </button>
+      <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition flex items-center gap-1 shadow-sm">
+        🖨️ 列印標準 A4 週誌 (PDF)
+      </button>
+    </div>
+  </header>
+
+  <!-- ======================== 即時領域統計與折疊抽屜 (no-print) ======================== -->
+  <section class="no-print max-w-5xl mx-auto mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+    <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center gap-2">
+        <h2 class="text-sm font-bold text-slate-800">📊 當週六大領域指標即時分佈</h2>
+        <span class="text-xs text-slate-400">（點擊卡片可展開查看詳細使用的大指標與小指標）</span>
+      </div>
+      <button onclick="toggleDetails()" id="toggleBtn" class="text-xs text-indigo-600 hover:underline font-semibold">
+        展開詳細使用指標 ▼
+      </button>
+    </div>
+
+    <!-- 6大領域計數卡片 -->
+    <div class="grid grid-cols-6 gap-2 text-center select-pointer cursor-pointer" onclick="toggleDetails()">
+      <div class="bg-red-50 border border-red-200 p-2 rounded-lg hover:bg-red-100/70 transition">
+        <div class="text-xs text-red-600 font-bold">身 (身心健康)</div>
+        <div class="text-xl font-black text-red-700" id="badge-身">0</div>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 p-2 rounded-lg hover:bg-amber-100/70 transition">
+        <div class="text-xs text-amber-600 font-bold">認 (認知)</div>
+        <div class="text-xl font-black text-amber-700" id="badge-認">0</div>
+      </div>
+      <div class="bg-blue-50 border border-blue-200 p-2 rounded-lg hover:bg-blue-100/70 transition">
+        <div class="text-xs text-blue-600 font-bold">語 (語文)</div>
+        <div class="text-xl font-black text-blue-700" id="badge-語">0</div>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-lg hover:bg-emerald-100/70 transition">
+        <div class="text-xs text-emerald-600 font-bold">社 (社會)</div>
+        <div class="text-xl font-black text-emerald-700" id="badge-社">0</div>
+      </div>
+      <div class="bg-purple-50 border border-purple-200 p-2 rounded-lg hover:bg-purple-100/70 transition">
+        <div class="text-xs text-purple-600 font-bold">美 (美感)</div>
+        <div class="text-xl font-black text-purple-700" id="badge-美">0</div>
+      </div>
+      <div class="bg-pink-50 border border-pink-200 p-2 rounded-lg hover:bg-pink-100/70 transition">
+        <div class="text-xs text-pink-600 font-bold">情 (情緒)</div>
+        <div class="text-xl font-black text-pink-700" id="badge-情">0</div>
+      </div>
+    </div>
+
+    <!-- 可折疊展開的指標細節 -->
+    <div id="detailsDrawer" class="hidden mt-4 pt-3 border-t border-slate-200 text-xs bg-slate-50 p-3 rounded-lg">
+      <div class="font-bold text-slate-700 mb-2">已選擇的指標細節對照：</div>
+      <div id="selectedIndicatorsList" class="space-y-1.5 text-slate-600">
+        <!-- JS 動態產生 -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== 快速填寫/編輯抽屜 (no-print) ======================== -->
+  <section id="editDrawer" class="no-print max-w-5xl mx-auto mb-6 bg-white p-5 rounded-xl shadow-md border-2 border-indigo-200">
+    <div class="flex justify-between items-center mb-4 pb-2 border-b">
+      <h3 class="font-bold text-slate-800 flex items-center gap-2">
+        <span>✏️ 週誌內容編輯區</span>
+        <span class="text-xs font-normal text-slate-500">(下方模板會即時同步更新)</span>
+      </h3>
+      <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded">年齡層：大班 (5-6歲)</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 text-xs">
       <div>
-        <h1 class="text-xl font-bold text-slate-900">新北市私立富雅幼兒園 - 主題教學管理系統</h1>
-        <p class="text-xs text-slate-500">週誌編輯、學習指標即時統計、囝仔歌連動</p>
+        <label class="block font-bold mb-1">週次：</label>
+        <select id="formWeek" onchange="handleWeekChange(this.value)" class="w-full border border-slate-300 rounded p-1.5">
+          <option value="第一週">第一週</option>
+          <option value="第二週">第二週</option>
+          <option value="第三週">第三週</option>
+          <option value="第四週">第四週</option>
+          <option value="第五週">第五週</option>
+        </select>
       </div>
-      <div class="flex gap-2">
-        <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition flex items-center gap-1 shadow-sm">
-          <span>🖨️ 列印 / 另存 PDF</span>
-        </button>
+      <div>
+        <label class="block font-bold mb-1">活動日期：</label>
+        <input type="text" id="formDate" value="113/08/12-113/08/16" oninput="syncPreview()" class="w-full border border-slate-300 rounded p-1.5">
       </div>
-    </header>
-
-    <!-- 即時領域次數統計看板 (重要功能) -->
-    <div class="no-print mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-sm font-semibold text-slate-700">當週指標領域即時統計（身、認、語、社、美、情）</h2>
-        <span class="text-xs text-slate-400">點選/更換指標時會即時更新</span>
+      <div>
+        <label class="block font-bold mb-1">教師：</label>
+        <input type="text" id="formTeacher" value="李晏婷、陳聖勳" oninput="syncPreview()" class="w-full border border-slate-300 rounded p-1.5">
       </div>
-      <div class="grid grid-cols-6 gap-2 text-center" id="domainCounters">
-        <div class="bg-red-50 border border-red-200 p-2 rounded-lg">
-          <div class="text-xs text-red-600 font-bold">身 (身體動作)</div>
-          <div class="text-xl font-black text-red-700" id="count-身">0</div>
-        </div>
-        <div class="bg-amber-50 border border-amber-200 p-2 rounded-lg">
-          <div class="text-xs text-amber-600 font-bold">認 (認知)</div>
-          <div class="text-xl font-black text-amber-700" id="count-認">0</div>
-        </div>
-        <div class="bg-blue-50 border border-blue-200 p-2 rounded-lg">
-          <div class="text-xs text-blue-600 font-bold">語 (語文)</div>
-          <div class="text-xl font-black text-blue-700" id="count-語">0</div>
-        </div>
-        <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-lg">
-          <div class="text-xs text-emerald-600 font-bold">社 (社會)</div>
-          <div class="text-xl font-black text-emerald-700" id="count-社">0</div>
-        </div>
-        <div class="bg-purple-50 border border-purple-200 p-2 rounded-lg">
-          <div class="text-xs text-purple-600 font-bold">美 (美感)</div>
-          <div class="text-xl font-black text-purple-700" id="count-美">0</div>
-        </div>
-        <div class="bg-pink-50 border border-pink-200 p-2 rounded-lg">
-          <div class="text-xs text-pink-600 font-bold">情 (情緒)</div>
-          <div class="text-xl font-black text-pink-700" id="count-情">0</div>
+      <div>
+        <label class="block font-bold mb-1">主題名稱 / 主要概念：</label>
+        <div class="flex gap-1">
+          <input type="text" id="formTheme" value="小腳ㄚ逛社區" oninput="syncPreview()" placeholder="主題" class="w-1/2 border border-slate-300 rounded p-1.5">
+          <input type="text" id="formConcept" value="大富翁" oninput="syncPreview()" placeholder="概念" class="w-1/2 border border-slate-300 rounded p-1.5">
         </div>
       </div>
     </div>
 
-    <!-- 週誌主要表格 (還原 A4 週誌格式) -->
-    <div class="print-container bg-white p-6 md:p-8 rounded-xl shadow-md border border-slate-300">
-      <div class="text-center font-bold text-lg md:text-xl border-b-2 border-black pb-2 mb-4 tracking-wider">
-        新北市私立富雅幼兒園 113 學年度第一學期主題教學活動週誌【大班】
+    <!-- 活動一 ~ 三 的編輯區塊 -->
+    <div class="space-y-4 text-xs">
+      <!-- 活動一 -->
+      <div class="p-3 bg-slate-50 border rounded-lg">
+        <div class="flex justify-between items-center mb-1">
+          <input type="text" id="formAct1Title" value="【活動一:學校的故事】（做學習單）" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
+          <button onclick="openPicker('act1')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇學習指標 (小指標)</button>
+        </div>
+        <textarea id="formAct1Content" rows="3" oninput="syncPreview()" class="w-full border p-2 rounded mb-2">引起動機
+  猜猜哪位老師待在富雅幼兒園最久呢？
+主要活動
+  1. 邀請老師分享學校過去與現在的故事。
+  2. 團討分享自己最喜歡園內哪個地方並畫下來。
+綜合活動
+  與同儕相互分享學習單內容。</textarea>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500 font-semibold">活動照片：</span>
+          <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act1')" class="text-xs text-slate-500">
+        </div>
       </div>
 
-      <!-- 基本資訊區 -->
-      <table class="w-full border-collapse border border-black text-sm mb-4">
-        <tbody>
-          <tr>
-            <td class="border border-black p-2 bg-slate-50 font-bold w-20 text-center">週次</td>
-            <td class="border border-black p-2">
-              <select id="selectWeek" onchange="onWeekChange()" class="w-full bg-transparent border-0 font-medium focus:ring-0">
-                <option value="1">第一週 (113/08/12 - 113/08/16)</option>
-                <option value="2">第二週 (113/08/19 - 113/08/23)</option>
-                <option value="3">第三週 (113/08/26 - 113/08/30)</option>
-                <option value="4">第四週 (113/09/02 - 113/09/06)</option>
-              </select>
-            </td>
-            <td class="border border-black p-2 bg-slate-50 font-bold w-20 text-center">活動日期</td>
-            <td class="border border-black p-2">
-              <input type="text" id="inputDate" value="113/08/12-113/08/16" class="w-full border-0 focus:ring-0">
-            </td>
-            <td class="border border-black p-2 bg-slate-50 font-bold w-20 text-center">教師</td>
-            <td class="border border-black p-2">
-              <input type="text" value="李晏婷、陳聖勳" class="w-full border-0 focus:ring-0">
-            </td>
-          </tr>
-          <tr>
-            <td class="border border-black p-2 bg-slate-50 font-bold text-center">主題名稱</td>
-            <td class="border border-black p-2">
-              <input type="text" value="小腳ㄚ逛社區" class="w-full border-0 focus:ring-0">
-            </td>
-            <td class="border border-black p-2 bg-slate-50 font-bold text-center">主要概念</td>
-            <td class="border border-black p-2" colspan="3">
-              <input type="text" value="大富翁" class="w-full border-0 focus:ring-0">
-            </td>
-          </tr>
-          <tr>
-            <td class="border border-black p-2 bg-slate-50 font-bold text-center">課程目標</td>
-            <td class="border border-black p-2" colspan="5">
-              <div id="courseGoals" class="text-xs text-slate-700 min-h-[24px]">依下方所選指標自動產生彙整...</div>
-            </td>
-          </tr>
-          <tr>
-            <td class="border border-black p-2 bg-slate-50 font-bold text-center">教學資源</td>
-            <td class="border border-black p-2" colspan="5">
-              <input type="text" value="白板、學習單、社區街景照片" class="w-full border-0 focus:ring-0">
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- 活動二 -->
+      <div class="p-3 bg-slate-50 border rounded-lg">
+        <div class="flex justify-between items-center mb-1">
+          <input type="text" id="formAct2Title" value="【活動二：心中的山佳】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
+          <button onclick="openPicker('act2')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇學習指標 (小指標)</button>
+        </div>
+        <textarea id="formAct2Content" rows="3" oninput="syncPreview()" class="w-full border p-2 rounded mb-2">引起動機
+  除了去公園還去過哪些地方？
+主要活動
+  1. 團討分享學校周圍有什麼商家、店面？做什麼？
+  2. 統整討論內容並在地圖上標記。
+綜合活動
+  預告下堂課要出門踏查並投票決定方向。</textarea>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500 font-semibold">活動照片：</span>
+          <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act2')" class="text-xs text-slate-500">
+        </div>
+      </div>
 
-      <!-- 三個活動設計區 -->
-      <table class="w-full border-collapse border border-black text-sm mb-4">
-        <thead>
-          <tr class="bg-slate-100">
-            <th class="border border-black p-2 text-left w-3/4">活動設計 (引起動機 / 主要活動 / 綜合活動)</th>
-            <th class="border border-black p-2 text-left w-1/4">學習指標 (點選帶入)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- 活動一 -->
-          <tr>
-            <td class="border border-black p-3 align-top">
-              <input type="text" value="【活動一：學校的故事】（做學習單）" class="font-bold w-full mb-1 border-0 focus:ring-0">
-              <textarea rows="4" class="w-full border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-indigo-500" placeholder="填寫引起動機、主要活動內容...">引起動機：猜猜哪位老師待在富雅幼兒園最久呢？
-主要活動：邀請資深老師分享學校過去與現在溜滑梯、廣場的變化。
-綜合活動：將自己最喜歡的幼兒園角落畫下來並與同儕分享。</textarea>
-            </td>
-            <td class="border border-black p-3 align-top bg-slate-50">
-              <div class="flex flex-col gap-2">
-                <button type="button" onclick="openIndicatorPicker('act1')" class="no-print text-xs px-2 py-1 bg-white border border-indigo-400 text-indigo-700 rounded hover:bg-indigo-50 flex items-center justify-center gap-1">
-                  🔍 選擇學習指標
-                </button>
-                <div id="act1-indicator" class="text-xs font-semibold text-slate-800 bg-white p-2 border border-slate-300 rounded min-h-[40px]">
-                  語-大-1-1-2 理解團體互動中輪流說話的規則
-                </div>
-              </div>
-            </td>
-          </tr>
-
-          <!-- 活動二 -->
-          <tr>
-            <td class="border border-black p-3 align-top">
-              <input type="text" value="【活動二：心中的山佳】" class="font-bold w-full mb-1 border-0 focus:ring-0">
-              <textarea rows="4" class="w-full border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-indigo-500" placeholder="填寫引起動機、主要活動內容...">引起動機：除了去公園還去過哪些地方？
-主要活動：團討分享學校周圍的店家（全聯、地政事務所、郵局）。
-綜合活動：預告下堂課出門踏查，並進行路線投票。</textarea>
-            </td>
-            <td class="border border-black p-3 align-top bg-slate-50">
-              <div class="flex flex-col gap-2">
-                <button type="button" onclick="openIndicatorPicker('act2')" class="no-print text-xs px-2 py-1 bg-white border border-indigo-400 text-indigo-700 rounded hover:bg-indigo-50 flex items-center justify-center gap-1">
-                  🔍 選擇學習指標
-                </button>
-                <div id="act2-indicator" class="text-xs font-semibold text-slate-800 bg-white p-2 border border-slate-300 rounded min-h-[40px]">
-                  語-大-2-2-3 在團體互動情境中參與討論
-                </div>
-              </div>
-            </td>
-          </tr>
-
-          <!-- 活動三 -->
-          <tr>
-            <td class="border border-black p-3 align-top">
-              <input type="text" value="【活動三：我的鄰居（一）】" class="font-bold w-full mb-1 border-0 focus:ring-0">
-              <textarea rows="4" class="w-full border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-indigo-500" placeholder="填寫引起動機、主要活動內容...">引起動機：回顧「心中的山佳」決定出發方向。
-主要活動：出門實地踏查社區商家，注意馬路安全，記憶三家商店。
-綜合活動：回園分享看到的招牌（理髮店、八茶飲料店、百年車站）。</textarea>
-            </td>
-            <td class="border border-black p-3 align-top bg-slate-50">
-              <div class="flex flex-col gap-2">
-                <button type="button" onclick="openIndicatorPicker('act3')" class="no-print text-xs px-2 py-1 bg-white border border-indigo-400 text-indigo-700 rounded hover:bg-indigo-50 flex items-center justify-center gap-1">
-                  🔍 選擇學習指標
-                </button>
-                <div id="act3-indicator" class="text-xs font-semibold text-slate-800 bg-white p-2 border border-slate-300 rounded min-h-[40px]">
-                  社-大-1-5-1 探索社區中的人事物、活動、場所及其與自己的關係
-                </div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- 學習區與母語教學區 (囝仔歌自動帶入) -->
-      <table class="w-full border-collapse border border-black text-sm mb-4">
-        <tbody>
-          <tr>
-            <td class="border border-black p-2 font-bold bg-slate-50 w-1/2">【學習區】</td>
-            <td class="border border-black p-2 font-bold bg-slate-50 w-1/2">【母語教學（囝仔歌自動連動）】</td>
-          </tr>
-          <tr>
-            <td class="border border-black p-3 align-top">
-              <input type="text" value="*美勞區：完成「我最喜歡的校園角落」學習單" class="w-full border-0 focus:ring-0 text-xs">
-            </td>
-            <td class="border border-black p-3 align-top bg-amber-50/40">
-              <div id="nurseryRhyme" class="text-xs whitespace-pre-line font-medium text-amber-900 leading-relaxed">
-手指謠（1）
-一支手指頭仔 一支手指頭仔 
-變ah變ah變
-變做杜蚓仔
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td class="border border-black p-2 font-bold bg-slate-50" colspan="2">教學省思</td>
-          </tr>
-          <tr>
-            <td class="border border-black p-3" colspan="2">
-              <textarea rows="3" class="w-full border border-slate-200 rounded p-1 text-xs focus:ring-1 focus:ring-indigo-500">這週帶著孩子展開校園與社區探索。孩子們透過觀察與分享，表達自己對環境的喜愛，在團體討論中也慢慢學會輪流表達。下週將針對踏查路線進行深度地圖搭建。</textarea>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- 簽章欄位 -->
-      <div class="flex justify-between text-sm pt-2 font-bold px-2">
-        <div>園長：</div>
-        <div>主任：</div>
-        <div>紀錄：李晏婷、陳聖勳</div>
+      <!-- 活動三 -->
+      <div class="p-3 bg-slate-50 border rounded-lg">
+        <div class="flex justify-between items-center mb-1">
+          <input type="text" id="formAct3Title" value="【活動三：我的鄰居（一）】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
+          <button onclick="openPicker('act3')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇學習指標 (小指標)</button>
+        </div>
+        <textarea id="formAct3Content" rows="3" oninput="syncPreview()" class="w-full border p-2 rounded mb-2">引起動機
+  回顧「心中的山佳」出發活動。
+主要活動
+  出門社區踏查，注意過馬路安全，記憶三家不同商店。
+綜合活動
+  與同儕相互分享踏查心得。</textarea>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500 font-semibold">活動照片：</span>
+          <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act3')" class="text-xs text-slate-500">
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- 指標選擇彈跳視窗 Modal (no-print) -->
+
+  <!-- =========================================================================
+       標準校園 A4 模板區 (完全吻合圖三、圖四格式，列印與預覽完全一致)
+       ========================================================================= -->
+  <main class="print-page max-w-5xl mx-auto bg-white p-8 md:p-12 shadow-lg border border-slate-300">
+    
+    <!-- 表頭 (對齊圖三) -->
+    <div class="text-center mb-2">
+      <h2 class="text-xl md:text-2xl font-bold tracking-widest" style="font-family: 'DFKai-SB', '標楷體';">
+        新北市私立富雅幼兒園113學年度第一學期主題教學活動週誌【大班】
+      </h2>
+    </div>
+
+    <!-- 正式表格 -->
+    <table class="official-table text-sm">
+      <tbody>
+        <!-- 週次、活動日期、教師 -->
+        <tr>
+          <td class="w-16 font-bold text-center">週次</td>
+          <td class="w-44 text-center font-medium" id="viewWeek">第一週</td>
+          <td class="w-20 font-bold text-center">活動<br>日期</td>
+          <td class="w-44 text-center" id="viewDate">113/08/12-113/08/16</td>
+          <td class="w-16 font-bold text-center">教師</td>
+          <td class="text-center" id="viewTeacher">李晏婷、陳聖勳</td>
+        </tr>
+        <!-- 主題名稱、主要概念 -->
+        <tr>
+          <td class="font-bold text-center">主題<br>名稱</td>
+          <td colspan="2" class="text-center font-medium" id="viewTheme">小腳ㄚ逛社區</td>
+          <td class="font-bold text-center">主要概念</td>
+          <td colspan="2" class="text-center font-medium" id="viewConcept">大富翁</td>
+        </tr>
+        <!-- 課程目標 (大指標：自動由小指標對應彙整生成，不需手動填寫) -->
+        <tr>
+          <td class="font-bold text-center">課程<br>目標</td>
+          <td colspan="5" class="p-2 leading-relaxed" id="viewBigGoals">
+            <!-- JS 自動產生大指標 -->
+          </td>
+        </tr>
+        <!-- 教學資源 -->
+        <tr>
+          <td class="font-bold text-center">教學<br>資源</td>
+          <td colspan="5" id="viewResources">白板、學習單、社區街景照片</td>
+        </tr>
+
+        <!-- 活動設計與學習指標標題欄 -->
+        <tr class="text-center font-bold">
+          <td colspan="4" class="py-2">活動設計</td>
+          <td colspan="2" class="py-2">學習指標</td>
+        </tr>
+
+        <!-- 活動一 -->
+        <tr>
+          <td colspan="4" class="align-top p-3 leading-relaxed">
+            <div class="font-bold mb-1" id="viewAct1Title">【活動一:學校的故事】（做學習單）</div>
+            <div class="whitespace-pre-line text-xs md:text-sm text-slate-800" id="viewAct1Content"></div>
+          </td>
+          <td colspan="2" class="align-top p-3 w-64 bg-white">
+            <div class="font-bold text-xs md:text-sm mb-2" id="viewAct1IndicatorCode"></div>
+            <!-- 照片欄位 -->
+            <div id="viewAct1Photos" class="grid grid-cols-1 gap-2 mt-2"></div>
+          </td>
+        </tr>
+
+        <!-- 活動二 -->
+        <tr>
+          <td colspan="4" class="align-top p-3 leading-relaxed">
+            <div class="font-bold mb-1" id="viewAct2Title">【活動二：心中的山佳】</div>
+            <div class="whitespace-pre-line text-xs md:text-sm text-slate-800" id="viewAct2Content"></div>
+          </td>
+          <td colspan="2" class="align-top p-3 w-64 bg-white">
+            <div class="font-bold text-xs md:text-sm mb-2" id="viewAct2IndicatorCode"></div>
+            <!-- 照片欄位 -->
+            <div id="viewAct2Photos" class="grid grid-cols-1 gap-2 mt-2"></div>
+          </td>
+        </tr>
+
+        <!-- 活動三 -->
+        <tr>
+          <td colspan="4" class="align-top p-3 leading-relaxed">
+            <div class="font-bold mb-1" id="viewAct3Title">【活動三：我的鄰居（一）】</div>
+            <div class="whitespace-pre-line text-xs md:text-sm text-slate-800" id="viewAct3Content"></div>
+          </td>
+          <td colspan="2" class="align-top p-3 w-64 bg-white">
+            <div class="font-bold text-xs md:text-sm mb-2" id="viewAct3IndicatorCode"></div>
+            <!-- 照片欄位 -->
+            <div id="viewAct3Photos" class="grid grid-cols-1 gap-2 mt-2"></div>
+          </td>
+        </tr>
+
+        <!-- 學習區 與 母語教學 (對齊圖三) -->
+        <tr>
+          <td colspan="3" class="p-2 font-bold align-top">
+            【學習區】
+            <div class="font-normal mt-1 text-xs" id="viewLearningArea">*美勞區/完成學習單</div>
+          </td>
+          <td colspan="3" class="p-2 font-bold align-top">
+            【母語教學】
+            <div class="font-normal mt-1 text-xs whitespace-pre-line text-slate-700" id="viewMotherTongue">
+              手指謠（1）
+              一支手指頭仔 一支手指頭仔 
+              變ah變ah變
+              變做杜蚓仔
+            </div>
+          </td>
+        </tr>
+
+        <!-- 教學省思 -->
+        <tr>
+          <td colspan="6" class="p-2 font-bold text-center">教學省思</td>
+        </tr>
+        <tr>
+          <td colspan="6" class="p-3 text-xs md:text-sm leading-relaxed" id="viewReflection">
+            這週我們帶著孩子們展開了一趟校園之旅。透過繪畫和分享，孩子們表達了自己對校園的喜愛，並展現了豐富的想像力。接著，我們一同探索了校園周邊，並鼓勵孩子們觀察周遭環境，分享有趣的事物。在這次活動中，孩子們的觀察力、表達能力和合作能力都得到了顯著提升。特別是在團體外出活動中，孩子們能更自覺地注意安全，並與同伴合作。不過，在團體討論時，有些孩子仍需要更多的引導，才能更深入地分享自己的想法。
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 底部審核簽章 (完全符合圖三) -->
+    <div class="flex justify-between items-center text-sm font-bold mt-4 px-4" style="font-family: 'DFKai-SB', '標楷體';">
+      <div>園長：</div>
+      <div>主任：</div>
+      <div>紀錄：<span id="viewSignRecord">李晏婷、陳聖勳</span></div>
+    </div>
+  </main>
+
+
+  <!-- ======================== 指標選擇器 Modal (no-print) ======================== -->
   <div id="pickerModal" class="no-print fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-      <!-- Modal 標題區 -->
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <!-- Modal Header -->
       <div class="p-4 bg-indigo-600 text-white flex justify-between items-center">
         <div>
-          <h3 class="font-bold text-lg">幼兒園教保活動課程大綱 - 指標選擇器</h3>
-          <p class="text-xs text-indigo-100">點選即可直接代入活動，並自動重算領域累計</p>
+          <h3 class="font-bold text-base md:text-lg">幼兒園教保課程指標資料庫（大班 5-6歲）</h3>
+          <p class="text-xs text-indigo-100">點選小指標時，上方「課程目標（大指標）」會自動帶出並彙整</p>
         </div>
-        <button onclick="closeModal()" class="text-white hover:text-indigo-200 text-2xl font-bold">&times;</button>
+        <button onclick="closePicker()" class="text-white hover:text-indigo-200 text-2xl font-bold">&times;</button>
       </div>
 
-      <!-- 領域篩選 Tab -->
-      <div class="flex border-b border-slate-200 bg-slate-50 p-2 gap-1 overflow-x-auto text-xs font-bold" id="domainTabs">
-        <button onclick="filterDomain('ALL')" class="domain-tab px-3 py-1.5 rounded-lg bg-indigo-600 text-white">全部</button>
-        <button onclick="filterDomain('身')" class="domain-tab px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">身 (身體動作)</button>
-        <button onclick="filterDomain('認')" class="domain-tab px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">認 (認知)</button>
-        <button onclick="filterDomain('語')" class="domain-tab px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">語 (語文)</button>
-        <button onclick="filterDomain('社')" class="domain-tab px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">社 (社會)</button>
-        <button onclick="filterDomain('美')" class="domain-tab px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">美 (美感)</button>
-        <button onclick="filterDomain('情')" class="domain-tab px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">情 (情緒)</button>
+      <!-- 領域分頁按鈕 -->
+      <div class="flex border-b bg-slate-50 p-2 gap-1 overflow-x-auto text-xs font-bold" id="domainTabs">
+        <button onclick="switchDomain('ALL')" class="domain-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white">全部領域</button>
+        <button onclick="switchDomain('身')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">身 (身心健康)</button>
+        <button onclick="switchDomain('認')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">認 (認知)</button>
+        <button onclick="switchDomain('語')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">語 (語文)</button>
+        <button onclick="switchDomain('社')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">社 (社會)</button>
+        <button onclick="switchDomain('美')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">美 (美感)</button>
+        <button onclick="switchDomain('情')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700">情 (情緒)</button>
       </div>
 
-      <!-- 指標清單 -->
-      <div class="p-4 overflow-y-auto flex-1 space-y-2 text-sm" id="indicatorList">
+      <!-- 指標列表 (包含大指標與小指標對照) -->
+      <div class="p-4 overflow-y-auto flex-1 space-y-2 text-xs md:text-sm" id="modalIndicatorsList">
         <!-- JS 動態產生 -->
       </div>
 
-      <!-- Modal 底部按鈕 -->
-      <div class="p-3 bg-slate-100 border-t border-slate-200 text-right">
-        <button onclick="closeModal()" class="px-4 py-1.5 bg-slate-300 text-slate-700 rounded-lg hover:bg-slate-400 text-xs font-semibold">關閉取消</button>
+      <!-- Modal Footer -->
+      <div class="p-3 bg-slate-100 border-t flex justify-end">
+        <button onclick="closePicker()" class="px-4 py-1.5 bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold">關閉</button>
       </div>
     </div>
   </div>
 
+  <!-- ======================== 資料邏輯與連動腳本 ======================== -->
   <script>
-    // 1. 指標資料庫 (依您上傳的大綱指標建立)
-    const indicatorsData = [
-      { code: "身-大-1-3-4", domain: "身", text: "覺察與辨別危險，保護自己及他人的安全" },
-      { code: "身-大-2-2-1", domain: "身", text: "敏捷使用各種素材、工具或器材" },
-      { code: "身-大-1-1-1", domain: "身", text: "覺察身體在穩定性及移動性動作表現上的協調性" },
-      { code: "身-大-3-2-1", domain: "身", text: "與他人合作運用各種素材或器材，共同發展創新玩法" },
-      { code: "認-大-1-3-2", domain: "認", text: "以圖像或符號紀錄生活物件的多項訊息" },
-      { code: "認-大-3-1-1", domain: "認", text: "與同伴討論解決問題的方法，並與他人合作實際執行" },
-      { code: "認-大-1-2-2", domain: "認", text: "觀察自然現象特徵的變化" },
-      { code: "認-大-2-3-1", domain: "認", text: "依據特徵為生活物件分類並命名" },
-      { code: "認-大-1-1-2", domain: "認", text: "以自己為定點，辨識物體與自己位置間的上下、前後、左右的關係" },
-      { code: "語-大-1-1-2", domain: "語", text: "理解團體互動中輪流說話的規則" },
-      { code: "語-大-2-2-3", domain: "語", text: "在團體互動情境中參與討論" },
-      { code: "語-大-1-1-1", domain: "語", text: "合宜詮釋互動對象的表情和肢體動作" },
-      { code: "語-大-2-1-1", domain: "語", text: "運用肢體動作表達經驗或故事" },
-      { code: "社-大-1-5-1", domain: "社", text: "探索社區中的人事物、活動、場所及其與自己的關係" },
-      { code: "社-大-1-2-1", domain: "社", text: "覺察自己和他人有不同的想法、感受、需求" },
-      { code: "社-大-2-3-1", domain: "社", text: "因應情境，表現合宜的生活禮儀" },
-      { code: "社-大-2-2-1", domain: "社", text: "聆聽他人並正向回應" },
-      { code: "美-大-1-1-1", domain: "美", text: "探索生活環境中事物的美，體驗各種美感經驗" },
-      { code: "美-大-2-2-1", domain: "美", text: "運用各種視覺藝術素材與工具的特性，進行創作" },
-      { code: "美-大-2-1-1", domain: "美", text: "玩索各種藝術媒介，發揮想像並享受自我表現的樂趣" },
-      { code: "情-大-4-1-1", domain: "情", text: "運用等待或改變想法的策略調節自己的情緒" },
-      { code: "情-大-2-1-2", domain: "情", text: "運用動作、表情、語言表達自己的情緒" },
-      { code: "情-大-2-1-3", domain: "情", text: "以符合社會文化的方式來表達自己的情緒" }
+    // 1. 完整的「大指標 (課程目標)」與「小指標 (學習指標)」對照庫 (對齊您的大綱指標表)
+    const indicatorsDB = [
+      // 身
+      { domain: '身', bigCode: '身-1-3', bigName: '覺察與模仿健康行為及安全的動作', smallCode: '身-大-1-3-4', smallName: '覺察與辨別危險，保護自己及他人的安全' },
+      { domain: '身', bigCode: '身-2-2', bigName: '熟練各種用具的操作', smallCode: '身-大-2-2-1', smallName: '敏捷使用各種素材、工具或器材' },
+      { domain: '身', bigCode: '身-2-2', bigName: '熟練各種用具的操作', smallCode: '身-大-2-2-2', smallName: '熟練手眼協調的精細動作' },
+      { domain: '身', bigCode: '身-1-1', bigName: '模仿身體操控活動', smallCode: '身-大-1-1-1', smallName: '覺察身體在穩定性及移動性動作表現上的協調性' },
+      { domain: '身', bigCode: '身-3-2', bigName: '樂於善用各種素材及器材進行創造性活動', smallCode: '身-大-3-2-1', smallName: '與他人合作運用各種素材或器材，共同發展創新玩法' },
+      
+      // 認
+      { domain: '認', bigCode: '認-1-3', bigName: '蒐集文化產物的訊息', smallCode: '認-大-1-3-2', smallName: '以圖像或符號紀錄生活物件的多項訊息' },
+      { domain: '認', bigCode: '認-1-3', bigName: '蒐集文化產物的訊息', smallCode: '認-大-1-3-1', smallName: '觀察生活物件的特徵' },
+      { domain: '認', bigCode: '認-3-1', bigName: '與他人合作解決生活環境中的問題', smallCode: '認-大-3-1-1', smallName: '與同伴討論解決問題的方法，並與他人合作實際執行' },
+      { domain: '認', bigCode: '認-1-2', bigName: '蒐集自然現象的訊息', smallCode: '認-大-1-2-2', smallName: '觀察自然現象特徵的變化' },
+      { domain: '認', bigCode: '認-2-2', bigName: '整理自然現象訊息間的關係', smallCode: '認-大-2-2-2', smallName: '與他人討論自然現象特徵間的關係' },
+      { domain: '認', bigCode: '認-2-3', bigName: '整理文化產物訊息間的關係', smallCode: '認-大-2-3-1', smallName: '依據特徵為生活物件分類並命名' },
+      { domain: '認', bigCode: '認-1-1', bigName: '蒐集生活環境中的數學訊息', smallCode: '認-大-1-1-2', smallName: '以自己為定點，辨識物體與自己位置間的上下、前後、左右的關係' },
+
+      // 語
+      { domain: '語', bigCode: '語-1-1', bigName: '理解互動對象的意圖', smallCode: '語-大-1-1-2', smallName: '理解團體互動中輪流說話的規則' },
+      { domain: '語', bigCode: '語-1-1', bigName: '理解互動對象的意圖', smallCode: '語-大-1-1-1', smallName: '合宜詮釋互動對象的表情和肢體動作' },
+      { domain: '語', bigCode: '語-2-2', bigName: '以口語參與互動', smallCode: '語-大-2-2-3', smallName: '在團體互動情境中參與討論' },
+      { domain: '語', bigCode: '語-2-2', bigName: '以口語參與互動', smallCode: '語-大-2-2-2', smallName: '針對談話內容表達疑問或看法' },
+      { domain: '語', bigCode: '語-2-1', bigName: '以肢體語言表達', smallCode: '語-大-2-1-1', smallName: '運用肢體動作表達經驗或故事' },
+      { domain: '語', bigCode: '語-2-3', bigName: '敘說生活經驗', smallCode: '語-大-2-3-1', smallName: '建構包含事件開端、過程、結局與個人觀點的經驗敘說' },
+
+      // 社
+      { domain: '社', bigCode: '社-1-5', bigName: '探索自己與生活環境中人事物的關係', smallCode: '社-大-1-5-1', smallName: '探索社區中的人事物、活動、場所及其與自己的關係' },
+      { domain: '社', bigCode: '社-1-2', bigName: '覺察自己與他人內在想法的不同', smallCode: '社-大-1-2-1', smallName: '覺察自己和他人有不同的想法、感受、需求' },
+      { domain: '社', bigCode: '社-2-3', bigName: '調整自己的行動，遵守生活規範與活動規則', smallCode: '社-大-2-3-1', smallName: '因應情境，表現合宜的生活禮儀' },
+      { domain: '社', bigCode: '社-2-2', bigName: '同理他人，並與他人互動', smallCode: '社-大-2-2-1', smallName: '聆聽他人並正向回應' },
+
+      // 美
+      { domain: '美', bigCode: '美-1-1', bigName: '體驗生活環境中愉悅的美感經驗', smallCode: '美-大-1-1-1', smallName: '探索生活環境中事物的美，體驗各種美感經驗' },
+      { domain: '美', bigCode: '美-2-2', bigName: '運用各種形式的藝術媒介進行創作', smallCode: '美-大-2-2-1', smallName: '運用各種視覺藝術素材與工具的特性，進行創作' },
+      { domain: '美', bigCode: '美-2-1', bigName: '發揮想像並進行個人獨特的創作', smallCode: '美-大-2-1-1', smallName: '玩索各種藝術媒介，發揮想像並享受自我表現的樂趣' },
+
+      // 情
+      { domain: '情', bigCode: '情-4-1', bigName: '運用策略調節自己的情緒', smallCode: '情-大-4-1-1', smallName: '運用等待或改變想法的策略調節自己的情緒' },
+      { domain: '情', bigCode: '情-2-1', bigName: '合宜地表達自己的情緒', smallCode: '情-大-2-1-2', smallName: '運用動作、表情、語言表達自己的情緒' },
+      { domain: '情', bigCode: '情-2-1', bigName: '合宜地表達自己的情緒', smallCode: '情-大-2-1-3', smallName: '以符合社會文化的方式來表達自己的情緒' }
     ];
 
-    // 2. 囝仔歌資料庫 (依週次連動)
-    const nurseryRhymes = {
-      1: "手指謠（1）\n一支手指頭仔 一支手指頭仔 \n變ah變ah變\n變做杜蚓仔",
-      2: "手指謠（2）\n兩支手指頭仔 兩支手指頭仔\n變ah變ah變\n變做白兔仔",
-      3: "手指謠（3）\n三支手指頭仔 三支手指頭仔\n變ah變ah變\n變做花貓仔",
-      4: "手指謠（4）\n四支手指頭仔 四支手指頭仔\n變ah變ah變\n變做媠蝶仔"
+    // 2. 囝仔歌資料庫
+    const nurseryRhymesDB = {
+      '第一週': "手指謠（1）\n一支手指頭仔 一支手指頭仔 \n變ah變ah變\n變做杜蚓仔",
+      '第二週': "手指謠（2）\n兩支手指頭仔 兩支手指頭仔\n變ah變ah變\n變做白兔仔",
+      '第三週': "手指謠（3）\n三支手指頭仔 三支手指頭仔\n變ah變ah變\n變做花貓仔",
+      '第四週': "手指謠（4）\n四支手指頭仔 四支手指頭仔\n變ah變ah變\n變做媠蝶仔",
+      '第五週': "手指謠（5）\n五支手指頭仔 五支手指頭仔\n變ah變ah變\n咱來phah pho̍k-á"
     };
 
-    let targetActivityId = '';
+    // 當前選擇的活動小指標
+    const currentActivityIndicators = {
+      act1: indicatorsDB.find(i => i.smallCode === '語-大-1-1-2'),
+      act2: indicatorsDB.find(i => i.smallCode === '語-大-2-2-3'),
+      act3: indicatorsDB.find(i => i.smallCode === '社-大-1-5-1')
+    };
 
-    // 切換週次
-    function onWeekChange() {
-      const week = document.getElementById('selectWeek').value;
-      document.getElementById('nurseryRhyme').innerText = nurseryRhymes[week] || '本週無設定歌曲或為複習週';
-    }
+    let activeActivityKey = '';
 
-    // 打開指標選擇 Modal
-    function openIndicatorPicker(actId) {
-      targetActivityId = actId;
-      filterDomain('ALL');
+    // 打開指標挑選器
+    function openPicker(actKey) {
+      activeActivityKey = actKey;
+      switchDomain('ALL');
       document.getElementById('pickerModal').classList.remove('hidden');
     }
 
-    function closeModal() {
+    function closePicker() {
       document.getElementById('pickerModal').classList.add('hidden');
     }
 
-    // 篩選領域並渲染
-    function filterDomain(domain) {
-      const listEl = document.getElementById('indicatorList');
+    // 切換領域過濾
+    function switchDomain(domain) {
+      document.querySelectorAll('.domain-btn').forEach(btn => {
+        btn.className = 'domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700';
+      });
+      event?.target && (event.target.className = 'domain-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white');
+
+      const listEl = document.getElementById('modalIndicatorsList');
       listEl.innerHTML = '';
 
-      // 更新按鈕樣式
-      document.querySelectorAll('.domain-tab').forEach(b => {
-        b.className = 'domain-tab px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700';
-      });
-      event?.target && (event.target.className = 'domain-tab px-3 py-1.5 rounded-lg bg-indigo-600 text-white');
-
-      const filtered = domain === 'ALL' ? indicatorsData : indicatorsData.filter(i => i.domain === domain);
+      const filtered = domain === 'ALL' ? indicatorsDB : indicatorsDB.filter(item => item.domain === domain);
 
       filtered.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'p-3 bg-slate-50 border border-slate-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50/50 cursor-pointer transition flex items-center justify-between';
-        div.innerHTML = `
+        const row = document.createElement('div');
+        row.className = 'p-3 border rounded-lg hover:border-indigo-500 hover:bg-indigo-50/40 cursor-pointer transition flex items-center justify-between';
+        row.innerHTML = `
           <div>
-            <span class="inline-block px-2 py-0.5 text-xs font-bold bg-slate-200 text-slate-700 rounded mr-2">${item.code}</span>
-            <span class="text-slate-800 font-medium">${item.text}</span>
+            <div class="text-xs text-indigo-700 font-bold mb-0.5">【大指標 / 課程目標】${item.bigCode} ${item.bigName}</div>
+            <div class="font-semibold text-slate-900">${item.smallCode} ${item.smallName}</div>
           </div>
-          <span class="text-indigo-600 text-xs font-semibold">選擇 ➔</span>
+          <button class="px-3 py-1 bg-indigo-100 text-indigo-700 font-bold rounded hover:bg-indigo-600 hover:text-white transition text-xs">
+            選擇帶入
+          </button>
         `;
-        div.onclick = () => selectIndicator(item);
-        listEl.appendChild(div);
+        row.onclick = () => {
+          currentActivityIndicators[activeActivityKey] = item;
+          syncPreview();
+          closePicker();
+        };
+        listEl.appendChild(row);
       });
     }
 
-    // 點選指標後帶入
-    function selectIndicator(item) {
-      if (targetActivityId) {
-        document.getElementById(`${targetActivityId}-indicator`).innerText = `${item.code} ${item.text}`;
-        updateStatistics();
-        closeModal();
+    // 處理圖片上傳
+    function handleImageUpload(e, actKey) {
+      const files = e.target.files;
+      const targetPhotoDiv = document.getElementById(`view${actKey.charAt(0).toUpperCase() + actKey.slice(1)}Photos`);
+      targetPhotoDiv.innerHTML = '';
+
+      Array.from(files).slice(0, 2).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          img.className = 'w-full h-32 object-cover rounded border border-slate-300';
+          targetPhotoDiv.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 週次切換
+    function handleWeekChange(week) {
+      document.getElementById('viewWeek').innerText = week;
+      document.getElementById('viewMotherTongue').innerText = nurseryRhymesDB[week] || '本週無設定歌曲';
+    }
+
+    // 展開/折疊統計細節
+    function toggleDetails() {
+      const drawer = document.getElementById('detailsDrawer');
+      const btn = document.getElementById('toggleBtn');
+      if (drawer.classList.contains('hidden')) {
+        drawer.classList.remove('hidden');
+        btn.innerText = '收合指標細節 ▲';
+      } else {
+        drawer.classList.add('hidden');
+        btn.innerText = '展開詳細使用指標 ▼';
       }
     }
 
-    // 即時計算 6 大領域次數
-    function updateStatistics() {
-      const counts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
-      const goals = [];
+    function toggleEditDrawer() {
+      document.getElementById('editDrawer').classList.toggle('hidden');
+    }
 
-      ['act1', 'act2', 'act3'].forEach(id => {
-        const text = document.getElementById(`${id}-indicator`).innerText.trim();
-        if (text) {
-          const firstChar = text.charAt(0);
-          if (counts[firstChar] !== undefined) counts[firstChar]++;
-          
-          // 抓取指標前綴作為課程目標
-          const code = text.split(' ')[0];
-          if (code) goals.push(code);
+    // 同步預覽與即時計算
+    function syncPreview() {
+      // 1. 同步基本欄位
+      document.getElementById('viewDate').innerText = document.getElementById('formDate').value;
+      document.getElementById('viewTeacher').innerText = document.getElementById('formTeacher').value;
+      document.getElementById('viewTheme').innerText = document.getElementById('formTheme').value;
+      document.getElementById('viewConcept').innerText = document.getElementById('formConcept').value;
+      document.getElementById('viewSignRecord').innerText = document.getElementById('formTeacher').value;
+
+      // 2. 同步活動內容
+      ['act1', 'act2', 'act3'].forEach(act => {
+        const capitalAct = act.charAt(0).toUpperCase() + act.slice(1);
+        document.getElementById(`view${capitalAct}Title`).innerText = document.getElementById(`form${capitalAct}Title`).value;
+        document.getElementById(`view${capitalAct}Content`).innerText = document.getElementById(`form${capitalAct}Content`).value;
+        
+        const ind = currentActivityIndicators[act];
+        if (ind) {
+          document.getElementById(`view${capitalAct}IndicatorCode`).innerText = `${ind.smallCode}\n${ind.smallName}`;
         }
       });
 
-      // 更新看板數字
-      for (const [key, val] of Object.entries(counts)) {
-        document.getElementById(`count-${key}`).innerText = val;
+      // 3. 自動連動計算：六大領域次數 + 彙整大指標(課程目標)
+      const domainCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
+      const bigGoalsMap = new Map();
+      const detailsListEl = document.getElementById('selectedIndicatorsList');
+      detailsListEl.innerHTML = '';
+
+      Object.values(currentActivityIndicators).forEach(ind => {
+        if (ind) {
+          domainCounts[ind.domain]++;
+          // 紀錄大指標 (重複的不覆蓋)
+          bigGoalsMap.set(ind.bigCode, ind.bigName);
+
+          // 產生細節清單
+          const item = document.createElement('div');
+          item.innerHTML = `<span class="font-bold text-indigo-700">[${ind.domain}]</span> ${ind.smallCode} ${ind.smallName} <span class="text-slate-400">（對應大指標：${ind.bigCode} ${ind.bigName}）</span>`;
+          detailsListEl.appendChild(item);
+        }
+      });
+
+      // 更新六大領域看板徽章
+      for (const [dom, count] of Object.entries(domainCounts)) {
+        document.getElementById(`badge-${dom}`).innerText = count;
       }
 
-      // 更新課程目標欄位
-      document.getElementById('courseGoals').innerText = goals.join('　');
+      // 自動產生大指標（課程目標），並按 身、認、語、社、美、情 順序排序
+      const domainOrder = ['身', '認', '語', '社', '美', '情'];
+      const sortedBigGoals = Array.from(bigGoalsMap.entries()).sort((a, b) => {
+        return domainOrder.indexOf(a[0].charAt(0)) - domainOrder.indexOf(b[0].charAt(0));
+      });
+
+      const bigGoalsText = sortedBigGoals.map(([code, name]) => `${code} ${name}`).join('　');
+      document.getElementById('viewBigGoals').innerText = bigGoalsText || '（尚未選取指標）';
     }
 
-    // 初始化執行一次統計
-    updateStatistics();
+    // 初始化執行
+    syncPreview();
   </script>
 </body>
 </html>
