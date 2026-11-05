@@ -6,10 +6,9 @@
   <title>新北市私立富雅幼兒園 - 主題教學活動週誌系統</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* 嚴格鎖定 A4 尺寸，確保單頁列印不溢出 */
     @page {
       size: A4 portrait;
-      margin: 8mm 10mm 8mm 10mm;
+      margin: 10mm 10mm 10mm 10mm;
     }
     @media print {
       .no-print { display: none !important; }
@@ -18,15 +17,21 @@
         box-shadow: none !important; 
         border: none !important; 
         width: 100% !important; 
+        max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
       }
-      table { page-break-inside: avoid; border-collapse: collapse !important; }
+      .official-title {
+        margin: 0 0 6px 0 !important;
+        padding: 0 !important;
+        line-height: 1.2 !important;
+      }
+      table { border-collapse: collapse !important; }
       tr { page-break-inside: avoid; }
       td, th { border: 1.2px solid black !important; }
     }
 
-    /* 學校官方表格樣式 (完全對齊圖三) */
+    /* 嚴格鎖定 B～H 欄比例 (對照圖二) */
     .official-table {
       table-layout: fixed;
       width: 100%;
@@ -34,26 +39,26 @@
       border: 1.5px solid black;
       font-family: "DFKai-SB", "BiauKai", "標楷體", "Microsoft JhengHei", serif;
       font-size: 11pt;
-      line-height: 1.3;
+      line-height: 1.35;
     }
     .official-table td, .official-table th {
       border: 1.2px solid black;
-      padding: 3px 5px;
+      padding: 4px 5px;
       word-break: break-word;
       overflow-wrap: break-word;
     }
 
-    /* 活動標題粗體與段落縮排 */
+    /* 活動文字排版：標題粗體、內文縮排 (對齊圖三) */
     .act-heading {
       font-weight: bold;
       color: #000;
-      margin-top: 3px;
+      margin-top: 4px;
       margin-bottom: 1px;
     }
     .act-indent {
       padding-left: 1.8em;
-      text-indent: 0em;
       line-height: 1.35;
+      text-indent: 0;
     }
   </style>
 </head>
@@ -63,7 +68,7 @@
   <header class="no-print max-w-5xl mx-auto mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
     <div>
       <h1 class="text-lg md:text-xl font-bold text-slate-900">新北市私立富雅幼兒園 - 週誌管理系統</h1>
-      <p class="text-xs text-slate-500">標準公文排版 ｜ 智慧自動縮排 ｜ 完美鎖定圖三與圖四比例</p>
+      <p class="text-xs text-slate-500">標準 B-H 欄位比例 ｜ 學習指標寬度校正 ｜ 無多餘內框</p>
     </div>
     <div class="flex items-center gap-2">
       <button onclick="toggleEditDrawer()" class="px-3 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 transition">
@@ -201,15 +206,15 @@
           <button onclick="openPicker('act1')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇指標庫 (小指標)</button>
         </div>
         <textarea id="formAct1Content" rows="7" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
-    猜猜哪位老師待在富雅幼兒園最久呢？
-    師:你們可以想想看哪一個老師是從你來到幼兒園的時候他就在的呢?
-    宥彤:我覺得是晏婷老師
-    語希:是園長媽咪
+  猜猜哪位老師待在富雅幼兒園最久呢？
+  師:你們可以想想看哪一個老師是從你來到幼兒園的時候他就在的呢?
+  宥彤:我覺得是晏婷老師
+  語希:是園長媽咪
 主要活動
-    1. 邀請老師分享學校的故事
-    2. 團討/分享自己最喜歡園內哪個地方？
+  1. 邀請老師分享學校的故事
+  2. 團討/分享自己最喜歡園內哪個地方？
 綜合活動
-    與同儕分享學習單內容</textarea>
+  與同儕分享學習單內容</textarea>
         <div class="flex items-center gap-2">
           <span class="text-slate-500 font-semibold">活動照片(可上傳1~2張)：</span>
           <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act1')" class="text-xs text-slate-500">
@@ -223,12 +228,12 @@
           <button onclick="openPicker('act2')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇指標庫 (小指標)</button>
         </div>
         <textarea id="formAct2Content" rows="7" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
-    除了去公園還去過哪些地方？（從學校出發）
+  除了去公園還去過哪些地方？（從學校出發）
 主要活動
-    1. 團討/分享學校附近有什麼商家、店面？做什麼？
-    2. 統整討論內容
+  1. 團討/分享學校附近有什麼商家、店面？做什麼？
+  2. 統整討論內容
 綜合活動
-    預告下堂課要出門踏查</textarea>
+  預告下堂課要出門踏查</textarea>
         <div class="flex items-center gap-2">
           <span class="text-slate-500 font-semibold">活動照片(可上傳1~2張)：</span>
           <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act2')" class="text-xs text-slate-500">
@@ -242,13 +247,13 @@
           <button onclick="openPicker('act3')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇指標庫 (小指標)</button>
         </div>
         <textarea id="formAct3Content" rows="7" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
-    回顧「心中的山佳」活動
+  回顧「心中的山佳」活動
 主要活動
-    1. 團討/分享要出發的方向？
-    2. 行前注意事項
-    3. 出門踏查
+  1. 團討/分享要出發的方向？
+  2. 行前注意事項
+  3. 出門踏查
 綜合活動
-    與同儕相互分享踏查心得</textarea>
+  與同儕相互分享踏查心得</textarea>
         <div class="flex items-center gap-2">
           <span class="text-slate-500 font-semibold">活動照片(可上傳1~2張)：</span>
           <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act3')" class="text-xs text-slate-500">
@@ -275,31 +280,32 @@
 
 
   <!-- =========================================================================
-       標準校園 A4 模板區 (完全吻合圖三、圖四 Word 公文格式，欄位絕不跑版)
+       標準校園 A4 模板區 (完全吻合圖二 B~H 欄結構，無多餘空白、無雙重內框)
        ========================================================================= -->
   <main class="print-page max-w-5xl mx-auto bg-white p-4 md:p-8 shadow-lg border border-slate-300 relative">
     
-    <!-- 左上角預覽浮水印標籤 (no-print) -->
+    <!-- 左上角預覽標籤 (no-print) -->
     <div class="no-print absolute top-2 left-2 px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded">
       📄【週誌標準模板預覽】
     </div>
 
-    <!-- 表頭 (對齊圖三) -->
-    <div class="text-center mb-2">
+    <!-- 表頭 (移除下邊距空白，對齊圖五修復) -->
+    <div class="text-center official-title mb-1.5">
       <h2 class="text-lg md:text-xl font-bold tracking-wider" style="font-family: 'DFKai-SB', '標楷體';">
         新北市私立富雅幼兒園<span id="viewYear">113</span>學年度<span id="viewSemester">第一學期</span>主題教學活動週誌【<span id="viewClassLevel">大班</span>】
       </h2>
     </div>
 
-    <!-- 正式表格：colgroup 鎖定圖三與圖四比例 -->
+    <!-- 正式表格：嚴格對照圖二 B、C、D、E、F、G、H 欄比例 -->
     <table class="official-table">
       <colgroup>
-        <col style="width: 9%;">  <!-- 週次 / 主題名稱 / 課程目標 / 教學資源 -->
-        <col style="width: 18%;"> <!-- 第一週 -->
-        <col style="width: 9%;">  <!-- 活動日期 -->
-        <col style="width: 27%;"> <!-- 113/08/12-113/08/16 / 主要概念 -->
-        <col style="width: 9%;">  <!-- 教師 -->
-        <col style="width: 28%;"> <!-- 李晏婷、陳聖勳 / 大富翁 -->
+        <col style="width: 8%;">  <!-- Col B: 週次 / 主題名稱 / 課程目標 / 教學資源 -->
+        <col style="width: 14%;"> <!-- Col C: 第一週 -->
+        <col style="width: 8%;">  <!-- Col D: 活動日期 -->
+        <col style="width: 24%;"> <!-- Col E: 113/08/12-113/08/16 -->
+        <col style="width: 11%;"> <!-- Col F: 教師 / 主要概念 -->
+        <col style="width: 15%;"> <!-- Col G: 教師姓名 / 概念名稱 -->
+        <col style="width: 20%;"> <!-- Col H: 【學習指標】(校正至圖二寬度，不再過寬) -->
       </colgroup>
       <tbody>
         <!-- 列 1：週次、活動日期、教師 -->
@@ -309,39 +315,39 @@
           <td class="font-bold text-center leading-tight">活動<br>日期</td>
           <td class="text-center font-mono" id="viewDate">113/08/12-113/08/16</td>
           <td class="font-bold text-center">教師</td>
-          <td class="text-center" id="viewTeacher">李晏婷、陳聖勳</td>
+          <td colspan="2" class="text-center" id="viewTeacher">李晏婷、陳聖勳</td>
         </tr>
-        <!-- 列 2：主題名稱、主要概念 (對齊圖三) -->
+        <!-- 列 2：主題名稱、主要概念 -->
         <tr>
           <td class="font-bold text-center leading-tight">主題<br>名稱</td>
-          <td colspan="2" class="text-center" id="viewTheme">小腳ㄚ逛社區</td>
+          <td colspan="3" class="text-center" id="viewTheme">小腳ㄚ逛社區</td>
           <td class="font-bold text-center">主要概念</td>
           <td colspan="2" class="text-center" id="viewConcept">大富翁</td>
         </tr>
         <!-- 列 3：課程目標 -->
         <tr>
           <td class="font-bold text-center leading-tight">課程<br>目標</td>
-          <td colspan="5" class="p-1.5 leading-normal" id="viewBigGoals"></td>
+          <td colspan="6" class="p-1.5 leading-normal" id="viewBigGoals"></td>
         </tr>
         <!-- 列 4：教學資源 -->
         <tr>
           <td class="font-bold text-center leading-tight">教學<br>資源</td>
-          <td colspan="5" id="viewResources">白板、學習單、社區</td>
+          <td colspan="6" id="viewResources">白板、學習單、社區</td>
         </tr>
 
-        <!-- 列 5：活動設計與學習指標標題 (左 63% : 右 37%) -->
+        <!-- 列 5：活動設計 (B~G欄: 80%) 與 學習指標 (H欄: 20%) 標題 -->
         <tr class="text-center font-bold">
-          <td colspan="4" class="py-1">活動設計</td>
-          <td colspan="2" class="py-1">學習指標</td>
+          <td colspan="6" class="py-1">活動設計</td>
+          <td class="py-1">學習指標</td>
         </tr>
 
         <!-- 活動一 -->
         <tr>
-          <td colspan="4" class="align-top p-2 leading-relaxed">
+          <td colspan="6" class="align-top p-2 leading-relaxed">
             <div class="font-bold mb-1" id="viewAct1Title">【活動一:學校的故事】（做學習單）</div>
             <div id="viewAct1Content"></div>
           </td>
-          <td colspan="2" class="align-top p-2 bg-white">
+          <td class="align-top p-2 bg-white">
             <div class="font-bold text-xs mb-1" id="viewAct1IndicatorCode"></div>
             <div id="viewAct1Photos" class="grid grid-cols-1 gap-1"></div>
           </td>
@@ -349,11 +355,11 @@
 
         <!-- 活動二 -->
         <tr>
-          <td colspan="4" class="align-top p-2 leading-relaxed">
+          <td colspan="6" class="align-top p-2 leading-relaxed">
             <div class="font-bold mb-1" id="viewAct2Title">【活動二：心中的山佳】</div>
             <div id="viewAct2Content"></div>
           </td>
-          <td colspan="2" class="align-top p-2 bg-white">
+          <td class="align-top p-2 bg-white">
             <div class="font-bold text-xs mb-1" id="viewAct2IndicatorCode"></div>
             <div id="viewAct2Photos" class="grid grid-cols-1 gap-1"></div>
           </td>
@@ -361,45 +367,39 @@
 
         <!-- 活動三 -->
         <tr>
-          <td colspan="4" class="align-top p-2 leading-relaxed">
+          <td colspan="6" class="align-top p-2 leading-relaxed">
             <div class="font-bold mb-1" id="viewAct3Title">【活動三：我的鄰居（一）】</div>
             <div id="viewAct3Content"></div>
           </td>
-          <td colspan="2" class="align-top p-2 bg-white">
+          <td class="align-top p-2 bg-white">
             <div class="font-bold text-xs mb-1" id="viewAct3IndicatorCode"></div>
             <div id="viewAct3Photos" class="grid grid-cols-1 gap-1"></div>
           </td>
         </tr>
 
-        <!-- 學習區 與 母語教學 (利用巢狀表格嚴格達成 50%:50% 垂直對切) -->
+        <!-- 學習區 (B~E欄) 與 母語教學 (F~H欄) - 不用巢狀表格，徹底消除雙重內框！ -->
         <tr>
-          <td colspan="6" class="p-0 border-0">
-            <table class="w-full border-collapse" style="table-layout: fixed;">
-              <tr>
-                <td style="width: 50%; border-right: 1.2px solid black; border-top: none; border-bottom: none; border-left: none; padding: 4px; vertical-align: top;">
-                  <div class="font-bold">【學習區】</div>
-                  <div class="mt-1 whitespace-pre-line text-xs" id="viewLearningArea">*美勞區/完成學習單</div>
-                </td>
-                <td style="width: 50%; border: none; padding: 4px; vertical-align: top;">
-                  <div class="font-bold">【母語教學】</div>
-                  <div class="mt-1 whitespace-pre-line text-xs" id="viewMotherTongue"></div>
-                </td>
-              </tr>
-            </table>
+          <td colspan="4" class="p-2 font-bold align-top">
+            【學習區】
+            <div class="font-normal mt-1 whitespace-pre-line text-xs" id="viewLearningArea">*美勞區/完成學習單</div>
+          </td>
+          <td colspan="3" class="p-2 font-bold align-top">
+            【母語教學】
+            <div class="font-normal mt-1 whitespace-pre-line text-xs" id="viewMotherTongue"></div>
           </td>
         </tr>
 
         <!-- 教學省思 -->
         <tr>
-          <td colspan="6" class="p-1 font-bold text-center">教學省思</td>
+          <td colspan="7" class="p-1 font-bold text-center">教學省思</td>
         </tr>
         <tr>
-          <td colspan="6" class="p-2 text-xs leading-normal" id="viewReflection"></td>
+          <td colspan="7" class="p-2 text-xs leading-normal" id="viewReflection"></td>
         </tr>
       </tbody>
     </table>
 
-    <!-- 底部審核簽章 (完全符合圖三) -->
+    <!-- 底部審核簽章 (完全符合圖一、圖二) -->
     <div class="flex justify-between items-center text-xs md:text-sm font-bold mt-2 px-2" style="font-family: 'DFKai-SB', '標楷體';">
       <div>園長：</div>
       <div>主任：</div>
@@ -526,19 +526,16 @@
     let selectedBigCode = null;
     let currentDetailFilterDomain = 'ALL';
 
-    // 智慧段落格式化引擎 (粗體活動步驟 + 自動段落縮排)
+    // 智慧段落格式化引擎
     function formatActivityText(raw) {
       if (!raw) return '';
       const lines = raw.split('\n');
       return lines.map(line => {
         const trimmed = line.trim();
         if (!trimmed) return '<div class="h-1"></div>';
-        
-        // 判斷是否為大標題 (粗體、無縮排)
         if (trimmed.includes('引起動機') || trimmed.includes('主要活動') || trimmed.includes('綜合活動')) {
           return `<div class="act-heading">${trimmed}</div>`;
         }
-        // 內容段落自動縮排
         return `<div class="act-indent">${trimmed}</div>`;
       }).join('');
     }
@@ -669,7 +666,7 @@
       }
     }
 
-    // 照片上傳 (限制最大高度，避免跨頁)
+    // 照片上傳
     function handleImageUpload(e, actKey) {
       const files = e.target.files;
       const targetPhotoDiv = document.getElementById(`view${actKey.charAt(0).toUpperCase() + actKey.slice(1)}Photos`);
