@@ -446,9 +446,6 @@
             </button>
           </div>
         </div>
-        <div class="text-xs text-slate-500">
-          評量等第：熟練(V) ｜ 發展中(V) ｜ 需協助(V) ｜ 未發展(V)
-        </div>
       </div>
 
       <!-- 基本資料編輯 (自動連動週誌資料) -->
@@ -618,6 +615,8 @@
         <tbody>
           <tr style="height: 155px;">
             <td class="align-top p-2 leading-relaxed" style="overflow: hidden;">
+              <!-- 補回圖三遺漏的標題 -->
+              <div class="font-bold text-xs mb-1">老師的話：</div>
               <div class="whitespace-pre-line text-slate-800 text-[11px] leading-tight" id="viewEvalIntro"></div>
               <!-- 老師的話 (彈性字體縮小容器) -->
               <div class="whitespace-pre-line font-medium text-slate-900 mt-1.5 leading-tight" id="viewEvalTeacherCommentContainer">
@@ -1245,7 +1244,8 @@
         .join(';;');
     }
 
-    async function saveWeeklyLogToCloud(isSilent = false) {
+    async function saveWeeklyLogT
+      oCloud(isSilent = false) {
       const btn = document.getElementById('btnSaveCloud');
       const statusEl = document.getElementById('cloudAutoSaveStatus');
       const weekVal = document.getElementById('formWeek').value.trim();
@@ -1371,9 +1371,15 @@
       });
     }
 
-    // 定時背景存檔 (40 秒)
+    // ⏰ 背景定時自動存檔 (依目前開啟的頁籤自動同步至對應試算表)
     setInterval(() => {
-      saveWeeklyLogToCloud(true);
+      if (activeMainTab === 'weekly') {
+        saveWeeklyLogToCloud(true);
+      } else if (activeMainTab === 'eval') {
+        if (currentStudentName) {
+          saveCurrentModule(true); // 評量表背景靜默自動存檔
+        }
+      }
     }, 40000);
 
     // 載入雲端列表
@@ -1382,7 +1388,9 @@
       selectEl.innerHTML = '<option value="">⏳ 讀取雲端清單中...</option>';
       try {
         const res = await fetch(GAS_API_URL);
-        cachedCloudLogs = await res.json();
+        const data = await res.json();
+        // 確保一定是陣列，避免 forEach 報錯
+        cachedCloudLogs = Array.isArray(data) ? data : [];
         
         selectEl.innerHTML = '<option value="">📂 選擇已存週誌載入編輯...</option>';
         if (cachedCloudLogs.length === 0) {
@@ -1478,24 +1486,9 @@
     ];
 
     // 幼兒資料庫
-    let studentsEvalDB = {
-      "余秉宥": {
-        levels: ["熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練", "熟練"],
-        comment: "秉宥真是個貼心又聰明的小孩！在校園周邊之社區地圖搭建過程中，他展現了細心的觀察力；在團隊合作時，他又能化身為一位小小調解員，幫助大家解決問題。雖然偶爾會有些小調皮，但這些都是他成長過程中的一部分。",
-        childSayTitle: "☆我學到...孩子說:",
-        childSayContent: "很開心，找到更快的路線",
-        parentComment: ""
-      },
-      "陳姸安": {
-        levels: ["發展中", "發展中", "熟練", "發展中", "發展中", "熟練", "發展中", "熟練", "熟練", "熟練", "熟練", "熟練"],
-        comment: "姸安在這次的社區探索活動中表現得非常熱情！她不僅踴躍回答問題，還對周遭環境充滿好奇，積極參與各項活動。雖然偶爾會有些小失誤，但她的熱情讓我們看到了她對這次活動的投入。",
-        childSayTitle: "☆我學到...孩子說:",
-        childSayContent: "到外面走走時看到不同的文字",
-        parentComment: ""
-      }
-    };
-
-    let currentStudentName = "余秉宥";
+    // 預設空白幼兒評量資料庫 (解決圖一：由老師自行新增名單)
+    let studentsEvalDB = {};
+    let currentStudentName = "";
     let activeMainTab = "weekly";
 
     // 主分頁切換
@@ -1666,7 +1659,7 @@
           <div class="flex items-center gap-1">
             <input type="text" value="${rubric.item}" oninput="updateRubricItemText(${idx}, this.value)" class="w-full border p-1 rounded text-xs bg-white text-slate-800 font-medium">
             <button type="button" onclick="toggleIndicatorRef(${idx})" class="px-2 py-1 bg-indigo-50 border border-indigo-300 text-indigo-700 rounded text-[11px] font-bold whitespace-nowrap hover:bg-indigo-100">
-              💡 圖十：指標參考 ▼
+              指標參考 ▼
             </button>
           </div>
 
@@ -1704,21 +1697,58 @@
       syncEvalPreview();
     }
 
-    // AI 語意非遮擋推薦面板
+    // 真正的動態 AI 評語推薦 (根據該幼兒目前的勾選等第動態生成)
     function toggleAiAssistant(type) {
       const drawer = document.getElementById(`aiDrawer-${type}`);
       drawer.classList.toggle('hidden');
       if (type === 'comment') {
         const box = document.getElementById('aiCommentSuggestions');
+        const name = currentStudentName || '幼生';
+        const curData = studentsEvalDB[name] || { levels: [] };
+
+        // 分析幼兒表現強項領域
+        let strongDomains = [];
+        evalRubricItems.forEach((r, idx) => {
+          if (curData.levels[idx] === '熟練') strongDomains.push(r.domain);
+        });
+        strongDomains = Array.from(new Set(strongDomains));
+        const strongText = strongDomains.length > 0 ? strongDomains.slice(0, 2).join('與') : '各項活動';
+
+        // 根據即時表現生成 3 種不同語氣的推薦評語
         box.innerHTML = `
-          <div onclick="applyAiText('comment', 1)" class="p-1.5 bg-white border rounded hover:bg-purple-100 cursor-pointer">
-            「${currentStudentName}在這次的社區探索中表現積極，細心觀察周遭事物，並能主動參與討論與團隊合作，進步非常顯著！」
+          <div onclick="applyDynamicAiComment(1)" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer text-xs">
+            <span class="font-bold text-purple-700">【熱情鼓勵型】</span><br>
+            「${name}在這次的主題探索中展現了極高的熱忱，特別是在${strongText}領域表現亮眼！不僅能主動觀察與同儕分享，在遇到困難時也能嘗試自主解決，進步十分顯著。」
           </div>
-          <div onclick="applyAiText('comment', 2)" class="p-1.5 bg-white border rounded hover:bg-purple-100 cursor-pointer">
-            「${currentStudentName}是個貼心懂事的孩子，在建構活動中展現了豐富的創造力，與同伴意見相左時也能學會溝通與協調。」
+          <div onclick="applyDynamicAiComment(2)" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer text-xs">
+            <span class="font-bold text-purple-700">【細膩溫暖型】</span><br>
+            「${name}是個貼心又善於觀察的孩子，在探索活動中展現了細緻的專注力。在${strongText}相關實踐中，能用心投入並熱心協助夥伴，深得同伴與老師的喜愛！」
+          </div>
+          <div onclick="applyDynamicAiComment(3)" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer text-xs">
+            <span class="font-bold text-purple-700">【穩健成長型】</span><br>
+            「這學期看見${name}日漸成熟的一面，無論在團體討論或實踐搭建上都更有自信。尤其在${strongText}的活動中思維靈活，期待下學期繼續保持這份探索的勇氣！」
           </div>
         `;
       }
+    }
+
+    function applyDynamicAiComment(opt) {
+      const name = currentStudentName || '幼生';
+      const curData = studentsEvalDB[name] || { levels: [] };
+      let strongDomains = [];
+      evalRubricItems.forEach((r, idx) => {
+        if (curData.levels[idx] === '熟練') strongDomains.push(r.domain);
+      });
+      const strongText = strongDomains.length > 0 ? Array.from(new Set(strongDomains)).slice(0, 2).join('與') : '各項活動';
+
+      let text = "";
+      if (opt === 1) text = `${name}在這次的主題探索中展現了極高的熱忱，特別是在${strongText}領域表現亮眼！不僅能主動觀察與同儕分享，在遇到困難時也能嘗試自主解決，進步十分顯著。`;
+      if (opt === 2) text = `${name}是個貼心又善於觀察的孩子，在探索活動中展現了細緻的專注力。在${strongText}相關實踐中，能用心投入並熱心協助夥伴，深得同伴與老師的喜愛！`;
+      if (opt === 3) text = `這學期看見${name}日漸成熟的一面，無論在團體討論或實踐搭建上都更有自信。尤其在${strongText}的活動中思維靈活，期待下學期繼續保持這份探索的勇氣！`;
+
+      document.getElementById('evalTeacherComment').value = text;
+      document.getElementById('aiDrawer-comment').classList.add('hidden');
+      syncEvalPreview();
     }
 
     function applyAiText(type, opt) {
@@ -1807,49 +1837,98 @@
 
       const childTitle = document.getElementById('evalChildSayTitle').value || '☆我學到...孩子說:';
       const childContent = document.getElementById('evalChildSayContent').value;
+      // 確保單頁列印：根據字數即時調整字體大小與行距 (對齊圖五，絕不推出第2頁)
+      const introText = document.getElementById('evalCurriculumIntro').value;
+      const commentText = document.getElementById('evalTeacherComment').value;
+      const totalChars = introText.length + commentText.length;
+
+      const introEl = document.getElementById('viewEvalIntro');
+      const commentEl = document.getElementById('viewEvalTeacherComment');
+      
+      introEl.innerText = introText;
+      commentEl.innerText = commentText;
+
+      // 當引言＋評語超過一定字數時，自動彈性縮小字體與行距
+      if (totalChars > 220) {
+        introEl.style.fontSize = '9px';
+        introEl.style.lineHeight = '1.2';
+        commentEl.style.fontSize = '9px';
+        commentEl.style.lineHeight = '1.2';
+      } else if (totalChars > 150) {
+        introEl.style.fontSize = '10px';
+        introEl.style.lineHeight = '1.25';
+        commentEl.style.fontSize = '10px';
+        commentEl.style.lineHeight = '1.25';
+      } else {
+        introEl.style.fontSize = '11px';
+        introEl.style.lineHeight = '1.35';
+        commentEl.style.fontSize = '11px';
+        commentEl.style.lineHeight = '1.35';
+      }
+
+      const childTitle = document.getElementById('evalChildSayTitle').value || '☆我學到...孩子說:';
+      const childContent = document.getElementById('evalChildSayContent').value;
       document.getElementById('viewEvalChildSay').innerText = childContent ? `${childTitle} ${childContent}` : '';
       document.getElementById('viewEvalParentComment').innerText = document.getElementById('evalParentComment').value;
     }
 
-    // 儲存邏輯分流 (儲存週誌 還是 儲存評量表至 Google 試算表)
-    async function saveCurrentModule() {
+    // 儲存邏輯分流 (儲存週誌 還是 儲存評量表至 Google 試算表，支援靜默背景自動存檔)
+    async function saveCurrentModule(isSilent = false) {
       if (activeMainTab === 'weekly') {
-        saveWeeklyLogToCloud();
-      } else {
-        // 儲存評量表至試算表 (圖十三需求)
-        const btn = document.getElementById('btnHeaderSave');
+        saveWeeklyLogToCloud(isSilent);
+        return;
+      }
+
+      // 如果還沒選定幼兒姓名，背景存檔先不動作
+      if (!currentStudentName) return;
+
+      const btn = document.getElementById('btnHeaderSave');
+      const statusEl = document.getElementById('cloudAutoSaveStatus');
+
+      if (!isSilent) {
         btn.disabled = true;
         btn.innerText = "⏳ 儲存評量表中...";
+      } else {
+        if (statusEl) statusEl.innerText = "☁️ 評量表背景同步中...";
+      }
 
-        const payload = {
-          module: 'evaluation',
-          schoolName: document.getElementById('formSchoolName')?.value || '新北市私立富雅幼兒園',
-          year: document.getElementById('formYear')?.value || '113',
-          semester: document.getElementById('formSemester')?.value || '第一學期',
-          className: document.getElementById('evalClassName').value,
-          studentName: currentStudentName,
-          activityName: document.getElementById('evalActivityName').value,
-          period: document.getElementById('evalPeriod').value,
-          teachers: document.getElementById('evalTeachers').value,
-          levels: studentsEvalDB[currentStudentName]?.levels || Array(12).fill(""),
-          intro: document.getElementById('evalCurriculumIntro').value,
-          teacherComment: document.getElementById('evalTeacherComment').value,
-          childSayTitle: document.getElementById('evalChildSayTitle').value,
-          childSayContent: document.getElementById('evalChildSayContent').value,
-          parentComment: document.getElementById('evalParentComment').value
-        };
+      const payload = {
+        module: 'evaluation',
+        schoolName: document.getElementById('formSchoolName')?.value || '新北市私立富雅幼兒園',
+        year: document.getElementById('formYear')?.value || '113',
+        semester: document.getElementById('formSemester')?.value || '第一學期',
+        className: document.getElementById('evalClassName').value,
+        studentName: currentStudentName,
+        activityName: document.getElementById('evalActivityName').value,
+        period: document.getElementById('evalPeriod').value,
+        teachers: document.getElementById('evalTeachers').value,
+        levels: studentsEvalDB[currentStudentName]?.levels || Array(12).fill(""),
+        intro: document.getElementById('evalCurriculumIntro').value,
+        teacherComment: document.getElementById('evalTeacherComment').value,
+        childSayTitle: document.getElementById('evalChildSayTitle').value,
+        childSayContent: document.getElementById('evalChildSayContent').value,
+        parentComment: document.getElementById('evalParentComment').value
+      };
 
-        try {
-          await fetch(GAS_API_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload)
-          });
-          alert(`✅ 【${currentStudentName}】幼兒學習評量表已成功存入 Google 試算表（幼兒評量紀錄）！`);
-        } catch (err) {
-          alert("❌ 儲存失敗：" + err);
-        } finally {
+      try {
+        await fetch(GAS_API_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
+        const timeStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+        if (statusEl) statusEl.innerText = `☁️ 評量表已於 ${timeStr} 自動同步`;
+
+        if (!isSilent) {
+          alert(`✅ 【${currentStudentName}】幼兒學習評量表已成功存入 Google 試算表！`);
+        }
+      } catch (err) {
+        if (statusEl) statusEl.innerText = "❌ 評量表同步失敗";
+        if (!isSilent) alert("❌ 儲存失敗：" + err);
+      } finally {
+        if (!isSilent) {
           btn.disabled = false;
           btn.innerText = "💾 儲存至雲端";
         }
