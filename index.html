@@ -94,31 +94,37 @@
       </div>
     </div>
 
-    <!-- 6大領域卡片 -->
+<!-- 6大領域卡片 (大字：學期總累計 / 小字：當週) -->
     <div class="grid grid-cols-6 gap-2 text-center select-none">
       <div onclick="showDetailsByDomain('身')" class="domain-card bg-red-50 border border-red-200 p-2 rounded-lg cursor-pointer hover:bg-red-100 transition">
-        <div class="text-xs text-red-600 font-bold">身體動作與健康</div>
+        <div class="text-[11px] text-red-600 font-bold truncate">身體動作與健康</div>
         <div class="text-xl font-black text-red-700" id="badge-身">0</div>
+        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-身">當週: 0 | 累計: 0</div>
       </div>
       <div onclick="showDetailsByDomain('認')" class="domain-card bg-amber-50 border border-amber-200 p-2 rounded-lg cursor-pointer hover:bg-amber-100 transition">
-        <div class="text-xs text-amber-600 font-bold">認知</div>
+        <div class="text-[11px] text-amber-600 font-bold truncate">認知</div>
         <div class="text-xl font-black text-amber-700" id="badge-認">0</div>
+        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-認">當週: 0 | 累計: 0</div>
       </div>
       <div onclick="showDetailsByDomain('語')" class="domain-card bg-blue-50 border border-blue-200 p-2 rounded-lg cursor-pointer hover:bg-blue-100 transition">
-        <div class="text-xs text-blue-600 font-bold">語文</div>
+        <div class="text-[11px] text-blue-600 font-bold truncate">語文</div>
         <div class="text-xl font-black text-blue-700" id="badge-語">0</div>
+        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-語">當週: 0 | 累計: 0</div>
       </div>
       <div onclick="showDetailsByDomain('社')" class="domain-card bg-emerald-50 border border-emerald-200 p-2 rounded-lg cursor-pointer hover:bg-emerald-100 transition">
-        <div class="text-xs text-emerald-600 font-bold">社會</div>
+        <div class="text-[11px] text-emerald-600 font-bold truncate">社會</div>
         <div class="text-xl font-black text-emerald-700" id="badge-社">0</div>
+        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-社">當週: 0 | 累計: 0</div>
       </div>
       <div onclick="showDetailsByDomain('美')" class="domain-card bg-purple-50 border border-purple-200 p-2 rounded-lg cursor-pointer hover:bg-purple-100 transition">
-        <div class="text-xs text-purple-600 font-bold">美感</div>
+        <div class="text-[11px] text-purple-600 font-bold truncate">美感</div>
         <div class="text-xl font-black text-purple-700" id="badge-美">0</div>
+        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-美">當週: 0 | 累計: 0</div>
       </div>
       <div onclick="showDetailsByDomain('情')" class="domain-card bg-pink-50 border border-pink-200 p-2 rounded-lg cursor-pointer hover:bg-pink-100 transition">
-        <div class="text-xs text-pink-600 font-bold">情緒</div>
+        <div class="text-[11px] text-pink-600 font-bold truncate">情緒</div>
         <div class="text-xl font-black text-pink-700" id="badge-情">0</div>
+        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-情">當週: 0 | 累計: 0</div>
       </div>
     </div>
 
@@ -139,12 +145,18 @@
         <span>✏️ 週誌完整編輯區</span>
         <span class="text-xs font-normal text-slate-500">（此處修改下方模板即時連動同步）</span>
       </h3>
-      <!-- 讀取雲端歷史週誌選單 -->
-      <div class="flex items-center gap-1.5">
-        <select id="selectSavedLogs" onchange="onSelectSavedLog(this.value)" class="text-xs border border-emerald-400 bg-emerald-50 text-emerald-900 rounded p-1.5 font-medium">
-          <option value="">📂 讀取已存週誌...</option>
-        </select>
-        <button type="button" onclick="loadSavedLogsList()" title="重新整理歷史清單" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold">🔄</button>
+<!-- 歷史載入、新增與自動存檔狀態 -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span id="cloudAutoSaveStatus" class="text-[11px] font-mono text-slate-400">☁️ 雲端狀態：就緒</span>
+        <button type="button" onclick="createNewBlankLog()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow-sm flex items-center gap-1">
+          ➕ 建立新週誌
+        </button>
+        <div class="flex items-center gap-1">
+          <select id="selectSavedLogs" onchange="onSelectSavedLog(this.value)" class="text-xs border border-emerald-400 bg-emerald-50 text-emerald-900 rounded p-1.5 font-medium">
+            <option value="">📂 選擇已存週誌載入編輯...</option>
+          </select>
+          <button type="button" onclick="loadSavedLogsList()" title="重新整理歷史清單" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold">🔄</button>
+        </div>
       </div>
     </div>
 
@@ -772,9 +784,8 @@
         }
       });
 
-      for (const [dom, count] of Object.entries(domainCounts)) {
-        document.getElementById(`badge-${dom}`).innerText = count;
-      }
+      currentWeekCounts = domainCounts;
+      calculateTotalStatistics();
 
       const domainOrder = ['身', '認', '語', '社', '美', '情'];
       const sortedGoals = Array.from(bigGoalsMap.entries()).sort((a, b) => {
@@ -816,29 +827,38 @@
     // ==========================================
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxd9Q4r1sVe4T_00CPeRvNOYMvwNkmHJib4leLmRiONMear0grl946FirDAy_f78XmP/exec";
 
-    async function saveWeeklyLogToCloud() {
+    async function saveWeeklyLogToCloud(isSilent = false) {
       const btn = document.getElementById('btnSaveCloud');
-      btn.disabled = true;
-      btn.innerText = "⏳ 儲存中...";
+      const statusEl = document.getElementById('cloudAutoSaveStatus');
+      const weekVal = document.getElementById('formWeek').value.trim();
 
-      // 收集畫面上所有要存入試算表的欄位
+      // 如果週次還是空的或剛開新表，背景自動存檔先不執行
+      if (isSilent && (!weekVal || weekVal === '第  週')) return;
+
+      if (!isSilent) {
+        btn.disabled = true;
+        btn.innerText = "⏳ 儲存中...";
+      } else {
+        if (statusEl) statusEl.innerText = "☁️ 背景自動存檔中...";
+      }
+
       const payload = {
         year: document.getElementById('formYear').value,
         semester: document.getElementById('formSemester').value,
         classLevel: document.getElementById('formClassLevel').value,
-        week: document.getElementById('formWeek').value,
+        week: weekVal,
         date: document.getElementById('formDate').value,
         teacher: document.getElementById('formTeacher').value,
         theme: document.getElementById('formTheme').value,
         concept: document.getElementById('formConcept').value,
         bigGoals: document.getElementById('viewBigGoals').innerText,
         counts: {
-          '身': document.getElementById('badge-身').innerText,
-          '認': document.getElementById('badge-認').innerText,
-          '語': document.getElementById('badge-語').innerText,
-          '社': document.getElementById('badge-社').innerText,
-          '美': document.getElementById('badge-美').innerText,
-          '情': document.getElementById('badge-情').innerText
+          '身': currentWeekCounts['身'] || 0,
+          '認': currentWeekCounts['認'] || 0,
+          '語': currentWeekCounts['語'] || 0,
+          '社': currentWeekCounts['社'] || 0,
+          '美': currentWeekCounts['美'] || 0,
+          '情': currentWeekCounts['情'] || 0
         },
         act1Content: document.getElementById('formAct1Content').value,
         act1Indicator: document.getElementById('viewAct1IndicatorCode').innerText,
@@ -858,14 +878,95 @@
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
-        alert(`✅ ${payload.week} 週誌已成功儲存至 Google 試算表！`);
+
+        const timeStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        if (statusEl) statusEl.innerText = `☁️ 已於 ${timeStr} 自動同步`;
+
+        if (!isSilent) {
+          alert(`✅ ${payload.week} 週誌已成功儲存至 Google 試算表！`);
+          loadSavedLogsList(); // 重新拉取一次清單
+        }
       } catch (err) {
-        alert("❌ 儲存失敗，請檢查網路或 GAS 網址：" + err);
+        if (statusEl) statusEl.innerText = "❌ 雲端同步失敗";
+        if (!isSilent) alert("❌ 儲存失敗：" + err);
       } finally {
-        btn.disabled = false;
-        btn.innerText = "💾 儲存此週至雲端";
+        if (!isSilent) {
+          btn.disabled = false;
+          btn.innerText = "💾 儲存此週至雲端";
+        }
       }
     }
+
+    // ==========================================
+    // ➕ 一鍵建立新週誌 (清空並載入乾淨範本)
+    // ==========================================
+    function createNewBlankLog() {
+      if (confirm("確定要建立新週誌嗎？目前的未存變更將會清空。")) {
+        document.getElementById('formWeek').value = '第  週';
+        document.getElementById('formDate').value = '';
+        document.getElementById('formTeacher').value = '';
+        document.getElementById('formTheme').value = '';
+        document.getElementById('formConcept').value = '';
+        document.getElementById('formResources').value = '白板、學習單、社區';
+
+        document.getElementById('formAct1Title').value = '【活動一:  】';
+        document.getElementById('formAct1Content').value = '引起動機\n主要活動\n綜合活動';
+        document.getElementById('formAct2Title').value = '【活動二:  】';
+        document.getElementById('formAct2Content').value = '引起動機\n主要活動\n綜合活動';
+        document.getElementById('formAct3Title').value = '【活動三:  】';
+        document.getElementById('formAct3Content').value = '引起動機\n主要活動\n綜合活動';
+
+        document.getElementById('formLearningArea').value = '';
+        document.getElementById('formMotherTongue').value = '';
+        document.getElementById('formReflection').value = '';
+
+        currentActivityIndicators.act1 = null;
+        currentActivityIndicators.act2 = null;
+        currentActivityIndicators.act3 = null;
+
+        document.getElementById('viewAct1Photos').innerHTML = '';
+        document.getElementById('viewAct2Photos').innerHTML = '';
+        document.getElementById('viewAct3Photos').innerHTML = '';
+        document.getElementById('selectSavedLogs').value = '';
+
+        syncPreview();
+      }
+    }
+
+    // 全域變數記錄當週指標數
+    let currentWeekCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
+
+    // 計算「雲端歷史累積 ＋ 當前編輯週」的總領域分佈
+    function calculateTotalStatistics() {
+      const activeWeek = document.getElementById('formWeek').value.trim();
+      const cumulativeCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
+
+      // 1. 先把雲端所有已存週次加總 (排除當前正在編輯的這週，避免重複計算)
+      if (Array.isArray(cachedCloudLogs)) {
+        cachedCloudLogs.forEach(row => {
+          if (row['週次'] !== activeWeek) {
+            ['身', '認', '語', '社', '美', '情'].forEach(d => {
+              cumulativeCounts[d] += parseInt(row[d] || 0, 10);
+            });
+          }
+        });
+      }
+
+      // 2. 加上目前畫面上正在編輯的當週次數
+      const domains = ['身', '認', '語', '社', '美', '情'];
+      domains.forEach(d => {
+        const total = cumulativeCounts[d] + (currentWeekCounts[d] || 0);
+        document.getElementById(`badge-${d}`).innerText = total; // 大數字顯示：學期總累計
+        document.getElementById(`sub-badge-${d}`).innerText = `當週: ${currentWeekCounts[d] || 0} | 累計: ${total}`;
+      });
+    }
+
+    // ==========================================
+    // ⏰ 背景定時自動存檔 (每 40 秒在背景跑一次)
+    // ==========================================
+    setInterval(() => {
+      saveWeeklyLogToCloud(true); // true 表示靜默存檔，完全不彈跳窗
+    }, 40000);
 
     // ==========================================
     // 讀取雲端試算表已存的歷史週誌
