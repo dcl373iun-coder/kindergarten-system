@@ -534,7 +534,11 @@
     let currentWeekCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
 
     let cachedCloudLogs = [];
-
+    // 幼兒園名稱變更與記憶函式 (放在最上方確保隨時調用)
+    function handleSchoolNameChange(val) {
+      if (val) localStorage.setItem('fuya_saved_schoolName', val);
+      syncPreview();
+    }
     let activeActivityKey = '';
     let currentModalAge = '大班';
     let currentModalDomain = 'ALL';
