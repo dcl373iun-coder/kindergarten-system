@@ -1244,8 +1244,7 @@
         .join(';;');
     }
 
-    async function saveWeeklyLogT
-      oCloud(isSilent = false) {
+    async function saveWeeklyLogToCloud(isSilent = false) {
       const btn = document.getElementById('btnSaveCloud');
       const statusEl = document.getElementById('cloudAutoSaveStatus');
       const weekVal = document.getElementById('formWeek').value.trim();
@@ -1819,25 +1818,7 @@
         tbody.appendChild(tr);
       });
 
-      // 3. 同步文字與彈性縮減字體 (防止超出單頁 A4)
-      document.getElementById('viewEvalIntro').innerText = document.getElementById('evalCurriculumIntro').value;
-      
-      const commentText = document.getElementById('evalTeacherComment').value;
-      const commentEl = document.getElementById('viewEvalTeacherComment');
-      commentEl.innerText = commentText;
-
-      // 字數超過 100 字自動縮小為 10px，避免推出第二頁
-      if (commentText.length > 130) {
-        commentEl.className = 'text-[9.5px] leading-tight';
-      } else if (commentText.length > 90) {
-        commentEl.className = 'text-[10.5px] leading-tight';
-      } else {
-        commentEl.className = 'text-xs leading-normal';
-      }
-
-      const childTitle = document.getElementById('evalChildSayTitle').value || '☆我學到...孩子說:';
-      const childContent = document.getElementById('evalChildSayContent').value;
-      // 確保單頁列印：根據字數即時調整字體大小與行距 (對齊圖五，絕不推出第2頁)
+      // 3. 同步文字與彈性縮減字體 (防止超出單頁 A4，對齊圖五)
       const introText = document.getElementById('evalCurriculumIntro').value;
       const commentText = document.getElementById('evalTeacherComment').value;
       const totalChars = introText.length + commentText.length;
@@ -1848,7 +1829,7 @@
       introEl.innerText = introText;
       commentEl.innerText = commentText;
 
-      // 當引言＋評語超過一定字數時，自動彈性縮小字體與行距
+      // 當引言＋評語字數多時，自動彈性縮小字體與行距
       if (totalChars > 220) {
         introEl.style.fontSize = '9px';
         introEl.style.lineHeight = '1.2';
@@ -1870,69 +1851,6 @@
       const childContent = document.getElementById('evalChildSayContent').value;
       document.getElementById('viewEvalChildSay').innerText = childContent ? `${childTitle} ${childContent}` : '';
       document.getElementById('viewEvalParentComment').innerText = document.getElementById('evalParentComment').value;
-    }
-
-    // 儲存邏輯分流 (儲存週誌 還是 儲存評量表至 Google 試算表，支援靜默背景自動存檔)
-    async function saveCurrentModule(isSilent = false) {
-      if (activeMainTab === 'weekly') {
-        saveWeeklyLogToCloud(isSilent);
-        return;
-      }
-
-      // 如果還沒選定幼兒姓名，背景存檔先不動作
-      if (!currentStudentName) return;
-
-      const btn = document.getElementById('btnHeaderSave');
-      const statusEl = document.getElementById('cloudAutoSaveStatus');
-
-      if (!isSilent) {
-        btn.disabled = true;
-        btn.innerText = "⏳ 儲存評量表中...";
-      } else {
-        if (statusEl) statusEl.innerText = "☁️ 評量表背景同步中...";
-      }
-
-      const payload = {
-        module: 'evaluation',
-        schoolName: document.getElementById('formSchoolName')?.value || '新北市私立富雅幼兒園',
-        year: document.getElementById('formYear')?.value || '113',
-        semester: document.getElementById('formSemester')?.value || '第一學期',
-        className: document.getElementById('evalClassName').value,
-        studentName: currentStudentName,
-        activityName: document.getElementById('evalActivityName').value,
-        period: document.getElementById('evalPeriod').value,
-        teachers: document.getElementById('evalTeachers').value,
-        levels: studentsEvalDB[currentStudentName]?.levels || Array(12).fill(""),
-        intro: document.getElementById('evalCurriculumIntro').value,
-        teacherComment: document.getElementById('evalTeacherComment').value,
-        childSayTitle: document.getElementById('evalChildSayTitle').value,
-        childSayContent: document.getElementById('evalChildSayContent').value,
-        parentComment: document.getElementById('evalParentComment').value
-      };
-
-      try {
-        await fetch(GAS_API_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-
-        const timeStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
-        if (statusEl) statusEl.innerText = `☁️ 評量表已於 ${timeStr} 自動同步`;
-
-        if (!isSilent) {
-          alert(`✅ 【${currentStudentName}】幼兒學習評量表已成功存入 Google 試算表！`);
-        }
-      } catch (err) {
-        if (statusEl) statusEl.innerText = "❌ 評量表同步失敗";
-        if (!isSilent) alert("❌ 儲存失敗：" + err);
-      } finally {
-        if (!isSilent) {
-          btn.disabled = false;
-          btn.innerText = "💾 儲存至雲端";
-        }
-      }
     }
   </script>
 </body>
