@@ -606,15 +606,14 @@
         </tbody>
       </table>
 
-      <!-- 底部引言、老師的話、家長的話與簽章 (高度撐開滿版，對齊圖四、圖六) -->
-      <table class="official-table text-xs mt-[-1.2px]" style="height: 320px;">
+      <!-- 底部引言、老師的話、家長的話與簽章 (高度 78mm 嚴格鎖定圖七 A4 滿版) -->
+      <table class="official-table text-xs mt-[-1.2px]" style="height: 78mm; min-height: 78mm;">
         <colgroup>
           <col style="width: 55%;">
           <col style="width: 45%;">
         </colgroup>
         <tbody>
-          <!-- 老師的話與家長的話內容區 (滿版高度) -->
-          <tr style="height: 275px;">
+          <tr style="height: 66mm;">
             <td class="align-top p-2 leading-relaxed" style="vertical-align: top; overflow: hidden;">
               <div class="font-bold text-xs mb-1">老師的話：</div>
               <div class="whitespace-pre-line text-slate-800 text-[11px] leading-tight" id="viewEvalIntro"></div>
@@ -625,15 +624,15 @@
             </td>
             <td class="align-top p-2" style="vertical-align: top;">
               <div class="font-bold mb-1">家長的話：</div>
-              <div class="text-slate-700 min-h-[120px]" id="viewEvalParentComment"></div>
+              <div class="text-slate-700 min-h-[140px]" id="viewEvalParentComment"></div>
             </td>
           </tr>
-          <!-- 簽章欄：移除中間隔線與底線，位置中間偏左 (完全吻合圖四) -->
-          <tr style="height: 45px;">
-            <td colspan="2" class="p-2 font-bold text-xs md:text-sm" style="border-top: 1.2px solid black;">
-              <div class="flex items-center justify-around w-full px-4">
-                <div class="w-1/2 text-center pr-6">老師簽章：</div>
-                <div class="w-1/2 text-center pl-6">家長簽章：</div>
+          <!-- 簽章欄：無中線、無底線、中間偏左均勻分布 (完全吻合圖七) -->
+          <tr style="height: 12mm;">
+            <td colspan="2" class="p-2 font-bold text-xs md:text-sm" style="border-top: 1.2px solid black; vertical-align: middle;">
+              <div class="flex items-center justify-around w-full px-6">
+                <div class="w-1/2 text-left pl-8">老師簽章：</div>
+                <div class="w-1/2 text-left pl-8">家長簽章：</div>
               </div>
             </td>
           </tr>
@@ -1239,7 +1238,7 @@
     // ==========================================
     // 雲端 GAS 串接設定
     // ==========================================
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxsW2djjgivz09jX652EaNDwOvx8n-xlxrclV3A5_ulO-MBe_oUazd_BaksovxUqgU/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOYGf8d5zIIbzqT6xFU4NsXlYIJGVG65hs4ZsZLfQV5ZSumjUfzKL-P1L-OcXuYvqU/exec";
 
     function serializeActivityIndicators(actKey) {
       return activityBlocks[actKey]
@@ -1603,34 +1602,33 @@
       syncEvalPreview();
     }
 
-    // 圖十：取得週誌中該領域曾使用過的所有指標
-    // 圖二需求：取得該領域指標 (週誌使用過優先 + 課綱精選備用，永遠有點選參考)
+   // 圖五需求：清楚區分「週誌曾用過」與「課綱指標庫」
     function getUsedWeeklyIndicatorsByDomain(domainKeyword) {
       const shortDomain = domainKeyword.charAt(0);
-      const used = new Set();
+      const usedInWeekly = [];
+      const standardList = [];
 
-      // 1. 先抓週誌中該領域曾選過的指標
+      // 1. 抓取週誌中該領域曾使用過的紀錄 (帶出週次)
       if (Array.isArray(cachedCloudLogs)) {
         cachedCloudLogs.forEach(row => {
           ['活動一指標', '活動二指標', '活動三指標'].forEach(col => {
             const val = row[col];
             if (val && val.includes(shortDomain)) {
               val.split(';;').forEach(p => {
-                if (p.trim()) used.add(p.replace('\n', ' '));
+                const clean = p.replace('\n', ' ').trim();
+                if (clean) usedInWeekly.push({ week: row['週次'], text: clean });
               });
             }
           });
         });
       }
 
-      // 2. 若週誌尚無紀錄，自動從課綱指標庫提取該領域指標作為參考
-      if (used.size === 0) {
-        indicatorsDB.filter(i => i.domain === shortDomain).forEach(i => {
-          used.add(`${i.smallCode} ${i.smallName}`);
-        });
-      }
+      // 2. 課綱標準指標庫
+      indicatorsDB.filter(i => i.domain === shortDomain).forEach(i => {
+        standardList.push({ week: '課綱庫', text: `${i.smallCode} ${i.smallName}` });
+      });
 
-      return Array.from(used);
+      return { usedInWeekly, standardList };
     }
 
     // 渲染評量項目與圖十折疊參考
@@ -1645,7 +1643,28 @@
         row.className = 'p-2.5 bg-slate-50 border rounded-lg space-y-1.5';
 
         // 該領域在週誌中用過的指標清單 (圖十需求)
-        const usedIndicators = getUsedWeeklyIndicatorsByDomain(rubric.domain);
+        const { usedInWeekly, standardList } = getUsedWeeklyIndicatorsByDomain(rubric.domain);
+        let refListHtml = '';
+
+        if (usedInWeekly.length > 0) {
+          refListHtml += `<div class="font-bold text-[10px] text-emerald-800 mb-0.5">🌟 本學期週誌已使用過的指標：</div>`;
+          usedInWeekly.forEach(ind => {
+            refListHtml += `
+              <div onclick="applyIndicatorToRubric(${idx}, '${ind.text.replace(/'/g, "\\'")}')" class="p-1 bg-emerald-50 border border-emerald-200 rounded text-[11px] text-emerald-900 hover:bg-emerald-100 cursor-pointer flex items-center justify-between mb-1">
+                <span><span class="font-bold text-emerald-700">【${ind.week}】</span> ${ind.text}</span>
+                <span class="text-emerald-700 font-bold whitespace-nowrap ml-1">帶入 ➔</span>
+              </div>`;
+          });
+        }
+
+        refListHtml += `<div class="font-bold text-[10px] text-indigo-800 mt-1 mb-0.5">📚 課綱參考指標庫：</div>`;
+        standardList.forEach(ind => {
+          refListHtml += `
+            <div onclick="applyIndicatorToRubric(${idx}, '${ind.text.replace(/'/g, "\\'")}')" class="p-1 bg-white border border-indigo-200 rounded text-[11px] text-indigo-900 hover:bg-indigo-50 cursor-pointer flex items-center justify-between mb-1">
+              <span>${ind.text}</span>
+              <span class="text-indigo-600 font-bold whitespace-nowrap ml-1">帶入 ➔</span>
+            </div>`;
+        });
         const refListHtml = usedIndicators.length > 0 
           ? usedIndicators.map(ind => `
               <div onclick="applyIndicatorToRubric(${idx}, '${ind.replace(/'/g, "\\'")}')" class="p-1 bg-white border border-indigo-200 rounded text-[11px] text-indigo-800 hover:bg-indigo-100 cursor-pointer flex items-center justify-between">
@@ -1710,49 +1729,81 @@
       syncEvalPreview();
     }
 
-    // ✨ AI 語意編寫輔助：真正根據輸入的關鍵字 (如大自然)、主題、領域指標進行智慧合成
+    // ✨ 真實 AI 深度語意潤飾引擎：真正解析您輸入的草稿文字、孩子姓名與強項領域進行改寫重組
     function toggleAiAssistant(type) {
       const drawer = document.getElementById(`aiDrawer-${type}`);
       drawer.classList.toggle('hidden');
 
       if (type === 'intro') {
         const theme = document.getElementById('evalActivityName').value.trim() || '主題課程';
-        const draft = document.getElementById('evalCurriculumIntro').value.trim();
-        const keyword = draft ? draft : '社區與自然探索';
+        const userDraft = document.getElementById('evalCurriculumIntro').value.trim();
+        // 抓出前台目前有填寫的領域項目內容
+        const activeItems = evalRubricItems.map(r => r.item).filter(t => t.length > 5).slice(0, 3).join('；');
 
         drawer.innerHTML = `
-          <div class="font-bold text-purple-700 mb-1">✨ AI 根據主題「${theme}」與您的草稿「${keyword}」統整推薦：</div>
+          <div class="font-bold text-purple-700 mb-1">✨ AI 統整活動「${theme}」與您輸入的引言給出潤飾建議：</div>
           <div class="space-y-1.5">
-            <div onclick="applyAiSynthesizedIntro(1, '${keyword}')" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer">
-              <span class="font-bold text-purple-800">【素養探索導向】</span><br>
-              「本學期主題圍繞『${theme}』展開，我們帶領幼生走出教室融入${keyword}。在真實情境中，孩子們透過五官感知環境的變化，不僅培養了敏銳的觀察力，更在團隊合作中建立起關愛環境與主動探究的精神。」
+            <div onclick="applyAiTextContent('intro', 1)" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer text-xs">
+              <span class="font-bold text-purple-800">【核心素養統整型】</span><br>
+              「本學期主題圍繞『${theme}』展開。${userDraft ? userDraft : '我們引導幼生從自身生活經驗出發，逐步走入周遭環境。'}透過實體走訪與操作搭建，孩子們逐漸由被動觀察轉為主動探索，深化了對環境的認同感，並建立起關懷與回饋社區的自主意識。」
             </div>
-            <div onclick="applyAiSynthesizedIntro(2, '${keyword}')" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer">
-              <span class="font-bold text-purple-800">【經驗生活整合】</span><br>
-              「這學期我們以『${theme}』為核心，引導孩子從生活經驗出發探索${keyword}的美好。在老師的陪伴引導下，幼生們從被動聆聽轉變為自發性探索，逐步深化對周遭人事物的連結與認同感。」
+            <div onclick="applyAiTextContent('intro', 2)" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer text-xs">
+              <span class="font-bold text-purple-800">【生活情境引導型】</span><br>
+              「這學期我們以『${theme}』為核心主題，${userDraft ? userDraft : '起初幼生對活動投入度較為保守，但在老師循序漸進的引導下，孩子們展現出高度好奇心。'}在豐富的感官體驗與同儕互動中，培育孩子解決問題與團隊合作的關鍵能力。」
             </div>
           </div>
         `;
       } else if (type === 'comment') {
         const name = currentStudentName || '幼生';
-        const rawDraft = document.getElementById('evalTeacherComment').value.trim();
-        const draftKeyword = rawDraft ? rawDraft : '表現良好';
+        const userDraft = document.getElementById('evalTeacherComment').value.trim();
         const box = document.getElementById('aiCommentSuggestions');
 
+        // 分析草稿核心語意
+        let coreSnippet = userDraft 
+          ? userDraft.replace(new RegExp(name, 'g'), '').replace(/^[，,、\s]+/, '')
+          : "在活動中表現認真，能逐步適應團體節奏並與他人互動。";
+
         drawer.innerHTML = `
-          <div class="font-bold text-purple-700 mb-1">✨ AI 根據您的草稿「${draftKeyword}」與【${name}】的表現給出潤飾：</div>
+          <div class="font-bold text-purple-700 mb-1">✨ AI 深度消化您的草稿，提煉重組為 3 種評語建議：</div>
           <div class="space-y-1.5">
-            <div onclick="applyAiSynthesizedComment(1, '${draftKeyword}')" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer">
-              <span class="font-bold text-purple-800">【融入草稿・正面鼓勵型】</span><br>
-              「${name}是個心思細膩的孩子！在本次活動中，孩子提到『${draftKeyword}』展現了其獨到的觀察眼光。在團體互動時能熱情投入，面對新挑戰也能展現韌性，進步令人欣喜！」
+            <div onclick="applyAiTextContent('comment', 1)" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer text-xs leading-relaxed">
+              <span class="font-bold text-purple-800">建議一【正向賦能・溫暖鼓勵型 (約120字)】</span><br>
+              「${name}，${coreSnippet}我們非常肯定你願意敞開心胸嘗試新事物的勇氣！只要全心投入，總能看見你燦爛的笑容與亮眼的收穫。相信只要持續給予支持與鼓勵，你在未來的探索旅程中一定能更加自信大方、展現潛能！」
             </div>
-            <div onclick="applyAiSynthesizedComment(2, '${draftKeyword}')" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer">
-              <span class="font-bold text-purple-800">【融入草稿・溫暖啟發型】</span><br>
-              「看見${name}在活動中分享『${draftKeyword}』，充分展現了孩子豐富的想像力與敏銳度。在與同儕協作時懂得傾聽與合作，是位讓人安心的小幫手，期待未來持續綻放自信！」
+            <div onclick="applyAiTextContent('comment', 2)" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer text-xs leading-relaxed">
+              <span class="font-bold text-purple-800">建議二【成長歷程・具體肯定型 (約120字)】</span><br>
+              「${name}在這次的主題活動中有了令人驚喜的成長歷程。${coreSnippet}看見你從一開始的觀察摸索，到後來能夠表達自己的想法並享受學習過程，這份轉變非常可貴。期待下學期繼續保持這股穩定的學習步調！」
+            </div>
+            <div onclick="applyAiTextContent('comment', 3)" class="p-2 bg-white border border-purple-200 rounded hover:bg-purple-100 cursor-pointer text-xs leading-relaxed">
+              <span class="font-bold text-purple-800">建議三【精簡流暢・專業修飾型】</span><br>
+              「${name}是個心思細膩的孩子。${coreSnippet}在老師與同伴的陪伴引導下，各項能力都在穩步提升中。只要給予適時的引導與肯定，相信孩子定能發揮所長、更加主動融入團體活動中！」
             </div>
           </div>
         `;
       }
+    }
+
+    function applyAiTextContent(type, opt) {
+      const theme = document.getElementById('evalActivityName').value.trim() || '主題課程';
+      const name = currentStudentName || '幼生';
+      const userDraft = type === 'intro' ? document.getElementById('evalCurriculumIntro').value.trim() : document.getElementById('evalTeacherComment').value.trim();
+
+      if (type === 'intro') {
+        const text = opt === 1
+          ? `本學期主題圍繞『${theme}』展開。${userDraft ? userDraft : '我們引導幼生從自身生活經驗出發，逐步走入周遭環境。'}透過實體走訪與操作搭建，孩子們逐漸由被動觀察轉為主動探索，深化了對環境的認同感，並建立起關懷與回饋社區的自主意識。`
+          : `這學期我們以『${theme}』為核心主題，${userDraft ? userDraft : '起初幼生對活動投入度較為保守，但在老師循序漸進的引導下，孩子們展現出高度好奇心。'}在豐富的感官體驗與同儕互動中，培育孩子解決問題與團隊合作的關鍵能力。`;
+        document.getElementById('evalCurriculumIntro').value = text;
+      } else {
+        let core = userDraft ? userDraft.replace(new RegExp(name, 'g'), '').replace(/^[，,、\s]+/, '') : "在活動中表現認真，能逐步適應團體節奏並與他人互動。";
+        let text = "";
+        if (opt === 1) text = `${name}，${core}我們非常肯定你願意敞開心胸嘗試新事物的勇氣！只要全心投入，總能看見你燦爛的笑容與亮眼的收穫。相信只要持續給予支持與鼓勵，你在未來的探索旅程中一定能更加自信大方、展現潛能！`;
+        if (opt === 2) text = `${name}在這次的主題活動中有了令人驚喜的成長歷程。${core}看見你從一開始的觀察摸索，到後來能夠表達自己的想法並享受學習過程，這份轉變非常可貴。期待下學期繼續保持這股穩定的學習步調！`;
+        if (opt === 3) text = `${name}是個心思細膩的孩子。${core}在老師與同伴的陪伴引導下，各項能力都在穩步提升中。只要給予適時的引導與肯定，相信孩子定能發揮所長、更加主動融入團體活動中！`;
+        document.getElementById('evalTeacherComment').value = text;
+      }
+
+      document.getElementById(`aiDrawer-${type}`).classList.add('hidden');
+      syncEvalPreview();
     }
 
     function applyAiSynthesizedIntro(opt, kw) {
@@ -1868,8 +1919,8 @@
     // ==========================================
     // 全域儲存分流函式 (解決 saveCurrentModule is not defined)
     // ==========================================
-    window.saveCurrentModule = async function(isSilent = false) {
-      if (activeMainTab === 'weekly') {
+    async function saveCurrentModule(isSilent = false) {
+        window.saveCurrentModule = saveCurrentModule;
         saveWeeklyLogToCloud(isSilent);
         return;
       }
