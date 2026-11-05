@@ -525,6 +525,8 @@
     // 加上這行（放在最上方供全域調用）
     let currentWeekCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
 
+    let cachedCloudLogs = [];
+
     let activeActivityKey = '';
     let currentModalAge = '大班';
     let currentModalDomain = 'ALL';
@@ -972,7 +974,6 @@
     // ==========================================
     // 讀取雲端試算表已存的歷史週誌
     // ==========================================
-    let cachedCloudLogs = [];
 
     async function loadSavedLogsList() {
       const selectEl = document.getElementById('selectSavedLogs');
