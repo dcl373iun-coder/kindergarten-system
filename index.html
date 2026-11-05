@@ -67,7 +67,7 @@
   <!-- ======================== 頂部導航列 (no-print) ======================== -->
   <header class="no-print max-w-5xl mx-auto mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
     <div>
-      <h1 class="text-lg md:text-xl font-bold text-slate-900">新北市私立富雅幼兒園 - 週誌管理系統</h1>
+      <h1 class="text-lg md:text-xl font-bold text-slate-900"><span id="headerSchoolName">新北市私立富雅幼兒園</span> - 週誌管理系統</h1>
     </div>
     <div class="flex items-center gap-2">
       <button onclick="toggleEditDrawer()" class="px-3 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 transition">
@@ -130,9 +130,13 @@
 
     <!-- 詳細清單 -->
     <div id="detailsDrawer" class="mt-4 pt-3 border-t border-slate-200 text-xs bg-slate-50 p-3 rounded-lg">
-      <div class="font-bold text-slate-700 mb-2 flex justify-between">
-        <span id="detailFilterTitle">已選擇的指標明細（大指標在前，小指標在後）：</span>
-        <span class="text-slate-400 font-normal">格式：[領域] 課程目標 學習指標</span>
+      <div class="font-bold text-slate-700 mb-2 flex flex-wrap items-center justify-between gap-2">
+        <span id="detailFilterTitle">已選擇的指標明細：</span>
+        <div class="flex items-center gap-1 text-xs">
+          <span class="text-slate-400 font-normal">排序方式：</span>
+          <button type="button" onclick="setDetailSort('week')" id="btnSortWeek" class="px-2 py-0.5 rounded bg-indigo-600 text-white font-bold">依週次 📅</button>
+          <button type="button" onclick="setDetailSort('domain')" id="btnSortDomain" class="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-medium hover:bg-slate-300">依領域 🎨</button>
+        </div>
       </div>
       <div id="selectedIndicatorsList" class="space-y-1.5 text-slate-700 font-mono"></div>
     </div>
@@ -162,6 +166,10 @@
 
     <!-- 表頭四大項目編輯 (自動學年、學期、年齡記憶選單) -->
     <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-4 text-xs">
+      <div class="md:col-span-2">
+        <label class="block font-bold mb-1 text-slate-600">幼兒園名稱：</label>
+        <input type="text" id="formSchoolName" value="新北市私立富雅幼兒園" oninput="handleSchoolNameChange(this.value)" class="w-full border p-1.5 rounded font-bold text-indigo-900" placeholder="例: 新北市私立富雅幼兒園">
+      </div>
       <div>
         <label class="block font-bold mb-1 text-slate-600">學年度：</label>
         <input type="text" id="formYear" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded font-mono" placeholder="例: 113">
@@ -294,7 +302,7 @@
     <!-- 表頭 (移除下邊距空白，對齊圖五修復) -->
     <div class="text-center official-title mb-1.5">
       <h2 class="text-lg md:text-xl font-bold tracking-wider" style="font-family: 'DFKai-SB', '標楷體';">
-        新北市私立富雅幼兒園<span id="viewYear">113</span>學年度<span id="viewSemester">第一學期</span>主題教學活動週誌【<span id="viewClassLevel">大班</span>】
+        <span id="viewSchoolName">新北市私立富雅幼兒園</span><span id="viewYear">113</span>學年度<span id="viewSemester">第一學期</span>主題教學活動週誌【<span id="viewClassLevel">大班</span>】
       </h2>
     </div>
 
@@ -729,14 +737,39 @@
       document.getElementById('editDrawer').classList.toggle('hidden');
     }
 
-    // 渲染指標明細清單：【週次】 [領域] 課程目標 學習指標
+    // 排序模式：'week' (週次) 或 'domain' (身認語社美情)
+    let currentDetailSort = 'week';
+
+    function setDetailSort(mode) {
+      currentDetailSort = mode;
+      document.getElementById('btnSortWeek').className = mode === 'week' 
+        ? 'px-2 py-0.5 rounded bg-indigo-600 text-white font-bold' 
+        : 'px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-medium hover:bg-slate-300';
+      document.getElementById('btnSortDomain').className = mode === 'domain' 
+        ? 'px-2 py-0.5 rounded bg-indigo-600 text-white font-bold' 
+        : 'px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-medium hover:bg-slate-300';
+      renderDetailsList();
+    }
+
+    // 渲染指標明細清單 (支援雙重排序 + 領域專屬色彩)
     function renderDetailsList() {
       const listEl = document.getElementById('selectedIndicatorsList');
+      if (!listEl) return;
       listEl.innerHTML = '';
       const activeWeek = document.getElementById('formWeek').value.trim();
       const allItems = [];
 
-      // 1. 抓取雲端歷史已存週次的指標 (排除當前正在編輯的這週，避免重複)
+      // 領域專屬色彩標籤樣式
+      const domainStyles = {
+        '身': 'bg-red-100 text-red-800 border-red-300',
+        '認': 'bg-amber-100 text-amber-800 border-amber-300',
+        '語': 'bg-blue-100 text-blue-800 border-blue-300',
+        '社': 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        '美': 'bg-purple-100 text-purple-800 border-purple-300',
+        '情': 'bg-pink-100 text-pink-800 border-pink-300'
+      };
+
+      // 1. 抓取雲端歷史已存週次指標
       if (Array.isArray(cachedCloudLogs)) {
         cachedCloudLogs.forEach(row => {
           if (row['週次'] !== activeWeek) {
@@ -745,44 +778,59 @@
               if (val) {
                 const code = val.split('\n')[0].trim();
                 const ind = indicatorsDB.find(i => i.smallCode === code);
-                if (ind) {
-                  allItems.push({ week: row['週次'], ...ind });
-                }
+                if (ind) allItems.push({ week: row['週次'], ...ind });
               }
             });
           }
         });
       }
 
-      // 2. 抓取目前畫面上正在編輯的當週指標
+      // 2. 抓取當前編輯中週次指標
       Object.values(currentActivityIndicators).forEach(ind => {
-        if (ind) {
-          allItems.push({ week: activeWeek || '當週', ...ind });
-        }
+        if (ind) allItems.push({ week: activeWeek || '當週', ...ind });
       });
 
-      // 3. 領域過濾 (ALL 或 身/認/語/社/美/情)
-      let filtered = allItems;
-      if (currentDetailFilterDomain !== 'ALL') {
-        filtered = allItems.filter(i => i.domain === currentDetailFilterDomain);
-      }
+      // 3. 領域過濾
+      let filtered = (currentDetailFilterDomain === 'ALL') 
+        ? allItems 
+        : allItems.filter(i => i.domain === currentDetailFilterDomain);
 
       if (filtered.length === 0) {
         listEl.innerHTML = '<div class="text-slate-400 py-1">此領域尚無任何已選取的指標紀錄</div>';
         return;
       }
 
+      // 4. 排序機制
+      const domainOrder = ['身', '認', '語', '社', '美', '情'];
+      filtered.sort((a, b) => {
+        if (currentDetailSort === 'domain') {
+          return domainOrder.indexOf(a.domain) - domainOrder.indexOf(b.domain);
+        } else {
+          return (a.week || '').localeCompare(b.week || '', 'zh-Hant');
+        }
+      });
+
+      // 5. 渲染輸出
       filtered.forEach(ind => {
         const div = document.createElement('div');
-        div.className = 'py-0.5';
-        // 格式：【週次】 [領域] 課程目標 學習指標
-        div.innerHTML = `<span class="inline-block px-1.5 py-0.2 bg-slate-200 text-slate-800 rounded font-bold mr-2 text-[11px]">【${ind.week}】</span><span class="font-bold text-blue-600">[${ind.domain}]</span> <span class="font-semibold text-slate-800">${ind.bigCode} ${ind.bigName}</span>　<span class="text-slate-600">${ind.smallCode} ${ind.smallName}</span>`;
+        div.className = 'py-1 flex flex-wrap items-center gap-1.5';
+        const style = domainStyles[ind.domain] || 'bg-slate-100 text-slate-800 border-slate-300';
+        div.innerHTML = `
+          <span class="inline-block px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded font-bold text-[11px]">【${ind.week}】</span>
+          <span class="inline-block px-1.5 py-0.5 rounded font-black text-[11px] border ${style}">[${ind.domain}]</span>
+          <span class="font-bold text-slate-800 text-xs md:text-sm">${ind.bigCode} ${ind.bigName}</span>
+          <span class="text-slate-600 text-xs md:text-sm">　${ind.smallCode} ${ind.smallName}</span>
+        `;
         listEl.appendChild(div);
       });
     }
-
+    
+const schoolName = document.getElementById('formSchoolName').value || '幼兒園';
+      document.getElementById('headerSchoolName').innerText = schoolName;
+      document.getElementById('viewSchoolName').innerText = schoolName;
+    
     // 同步前台所有欄位
-    function syncPreview() {
+    function syncPreview() {      
       document.getElementById('viewYear').innerText = document.getElementById('formYear').value;
       document.getElementById('viewSemester').innerText = document.getElementById('formSemester').value;
       document.getElementById('viewClassLevel').innerText = document.getElementById('formClassLevel').value;
@@ -841,6 +889,8 @@
 
     // 自動計算當前民國學年度 (8月後為新年，8月前為舊年)
     function initDefaultSettings() {
+      const savedSchool = localStorage.getItem('fuya_saved_schoolName') || '新北市私立富雅幼兒園';
+      document.getElementById('formSchoolName').value = savedSchool;
       const now = new Date();
       const rocYear = now.getFullYear() - 1911;
       const month = now.getMonth() + 1;
