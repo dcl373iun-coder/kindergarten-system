@@ -139,7 +139,13 @@
         <span>✏️ 週誌完整編輯區</span>
         <span class="text-xs font-normal text-slate-500">（此處修改下方模板即時連動同步）</span>
       </h3>
-      <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-semibold">自訂表頭資訊</span>
+      <!-- 讀取雲端歷史週誌選單 -->
+      <div class="flex items-center gap-1.5">
+        <select id="selectSavedLogs" onchange="onSelectSavedLog(this.value)" class="text-xs border border-emerald-400 bg-emerald-50 text-emerald-900 rounded p-1.5 font-medium">
+          <option value="">📂 讀取已存週誌...</option>
+        </select>
+        <button type="button" onclick="loadSavedLogsList()" title="重新整理歷史清單" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold">🔄</button>
+      </div>
     </div>
 
     <!-- 表頭四大項目編輯 -->
@@ -856,6 +862,83 @@
         btn.innerText = "💾 儲存此週至雲端";
       }
     }
+
+    // ==========================================
+    // 讀取雲端試算表已存的歷史週誌
+    // ==========================================
+    let cachedCloudLogs = [];
+
+    async function loadSavedLogsList() {
+      const selectEl = document.getElementById('selectSavedLogs');
+      selectEl.innerHTML = '<option value="">⏳ 讀取雲端清單中...</option>';
+      try {
+        const res = await fetch(GAS_API_URL);
+        cachedCloudLogs = await res.json();
+        
+        selectEl.innerHTML = '<option value="">📂 選擇已存週誌載入編輯...</option>';
+        if (cachedCloudLogs.length === 0) {
+          selectEl.innerHTML = '<option value="">（尚無任何已存週誌）</option>';
+          return;
+        }
+
+        cachedCloudLogs.forEach((item, index) => {
+          const opt = document.createElement('option');
+          opt.value = index;
+          opt.innerText = `【${item['週次']}】${item['主題']} (${item['日期']})`;
+          selectEl.appendChild(opt);
+        });
+      } catch (err) {
+        selectEl.innerHTML = '<option value="">❌ 讀取清單失敗</option>';
+        console.error(err);
+      }
+    }
+
+    // 點選歷史紀錄後，一鍵將所有欄位帶入編輯區
+    function onSelectSavedLog(index) {
+      if (index === '') return;
+      const log = cachedCloudLogs[index];
+      if (!log) return;
+
+      // 1. 還原表頭與基本資訊
+      document.getElementById('formYear').value = log['學年度'] || '113';
+      document.getElementById('formSemester').value = log['學期'] || '第一學期';
+      document.getElementById('formClassLevel').value = log['年齡層'] || '大班';
+      document.getElementById('formWeek').value = log['週次'] || '第一週';
+      document.getElementById('formDate').value = log['日期'] || '';
+      document.getElementById('formTeacher').value = log['教師'] || '';
+      document.getElementById('formTheme').value = log['主題'] || '';
+      document.getElementById('formConcept').value = log['概念'] || '';
+
+      // 2. 還原活動內容
+      document.getElementById('formAct1Content').value = log['活動一'] || '';
+      document.getElementById('formAct2Content').value = log['活動二'] || '';
+      document.getElementById('formAct3Content').value = log['活動三'] || '';
+
+      // 3. 還原活動指標
+      const findAndSetIndicator = (actKey, indicatorStr) => {
+        if (!indicatorStr) return;
+        const code = indicatorStr.split('\n')[0].trim();
+        const found = indicatorsDB.find(i => i.smallCode === code);
+        if (found) currentActivityIndicators[actKey] = found;
+      };
+      findAndSetIndicator('act1', log['活動一指標']);
+      findAndSetIndicator('act2', log['活動二指標']);
+      findAndSetIndicator('act3', log['活動三指標']);
+
+      // 4. 還原學習區、母語、省思
+      document.getElementById('formLearningArea').value = log['學習區'] || '';
+      document.getElementById('formMotherTongue').value = log['母語教學'] || '';
+      document.getElementById('formReflection').value = log['教學省思'] || '';
+
+      // 5. 觸發畫面即時同步
+      syncPreview();
+      alert(`已載入【${log['週次']}】的週誌資料！您可以直接編輯，修改後按「儲存」即可覆蓋更新。`);
+    }
+
+    // 頁面開啟時自動拉取一次歷史清單
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedLogsList();
+    });
   </script>
 </body>
 </html>
