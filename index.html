@@ -148,11 +148,11 @@
       </div>
     </div>
 
-    <!-- 表頭四大項目編輯 -->
+    <!-- 表頭四大項目編輯 (自動學年、學期、年齡記憶選單) -->
     <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-4 text-xs">
       <div>
         <label class="block font-bold mb-1 text-slate-600">學年度：</label>
-        <input type="text" id="formYear" value="113" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+        <input type="text" id="formYear" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded font-mono" placeholder="例: 113">
       </div>
       <div>
         <label class="block font-bold mb-1 text-slate-600">學期：</label>
@@ -160,18 +160,17 @@
       </div>
       <div>
         <label class="block font-bold mb-1 text-slate-600">年齡層/班級：</label>
-        <input type="text" id="formClassLevel" value="大班" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+        <input type="text" id="formClassLevel" list="classLevelOptions" value="" onchange="handleClassLevelChange(this.value)" oninput="syncPreview()" placeholder="可選或自填" class="w-full border p-1.5 rounded">
+        <datalist id="classLevelOptions">
+          <option value="大班">
+          <option value="中班">
+          <option value="小班">
+          <option value="幼幼班">
+        </datalist>
       </div>
       <div>
-        <label class="block font-bold mb-1 text-slate-600">週次 (可自填)：</label>
-        <input type="text" id="formWeek" value="第一週" list="weekList" oninput="handleWeekInputChange(this.value)" class="w-full border p-1.5 rounded">
-        <datalist id="weekList">
-          <option value="第一週">
-          <option value="第二週">
-          <option value="第三週">
-          <option value="第四週">
-          <option value="第五週">
-        </datalist>
+        <label class="block font-bold mb-1 text-slate-600">週次：</label>
+        <input type="text" id="formWeek" value="第  週" oninput="handleWeekInputChange(this.value)" class="w-full border p-1.5 rounded font-medium">
       </div>
       <div class="md:col-span-2">
         <label class="block font-bold mb-1 text-slate-600">活動日期：</label>
@@ -179,49 +178,42 @@
           <input type="date" id="dateStart" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
           <span>~</span>
           <input type="date" id="dateEnd" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
-          <input type="text" id="formDate" value="113/08/12-113/08/16" oninput="syncPreview()" class="w-full border p-1.5 rounded text-xs font-mono">
+          <input type="text" id="formDate" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded text-xs font-mono" placeholder="請選日期或自填">
         </div>
       </div>
     </div>
 
-    <!-- 教師、主題、概念、資源 -->
+    <!-- 教師、主題、概念、資源 (空白預設) -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4 text-xs">
       <div>
-        <label class="block font-bold mb-1 text-slate-600">教師 (自動同步紀錄)：</label>
-        <input type="text" id="formTeacher" value="李晏婷、陳聖勳" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+        <label class="block font-bold mb-1 text-slate-600">教師：</label>
+        <input type="text" id="formTeacher" value="" oninput="syncPreview()" placeholder="請填寫教師姓名" class="w-full border p-1.5 rounded">
       </div>
       <div>
         <label class="block font-bold mb-1 text-slate-600">主題名稱：</label>
-        <input type="text" id="formTheme" value="小腳ㄚ逛社區" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+        <input type="text" id="formTheme" value="" oninput="syncPreview()" placeholder="請填寫主題名稱" class="w-full border p-1.5 rounded">
       </div>
       <div>
         <label class="block font-bold mb-1 text-slate-600">主要概念：</label>
-        <input type="text" id="formConcept" value="大富翁" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+        <input type="text" id="formConcept" value="" oninput="syncPreview()" placeholder="請填寫主要概念" class="w-full border p-1.5 rounded">
       </div>
       <div>
         <label class="block font-bold mb-1 text-slate-600">教學資源：</label>
-        <input type="text" id="formResources" value="白板、學習單、社區" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+        <input type="text" id="formResources" value="" oninput="syncPreview()" placeholder="白板、學習單..." class="w-full border p-1.5 rounded">
       </div>
     </div>
 
-    <!-- 三大活動編輯區 -->
+    <!-- 三大活動編輯區 (標準三段式結構) -->
     <div class="space-y-3 text-xs mb-4">
       <!-- 活動一 -->
       <div class="p-3 bg-slate-50 border rounded-lg">
         <div class="flex justify-between items-center mb-1">
-          <input type="text" id="formAct1Title" value="【活動一:學校的故事】（做學習單）" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
+          <input type="text" id="formAct1Title" value="【活動一:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
           <button onclick="openPicker('act1')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇指標庫 (小指標)</button>
         </div>
-        <textarea id="formAct1Content" rows="7" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
-  猜猜哪位老師待在富雅幼兒園最久呢？
-  師:你們可以想想看哪一個老師是從你來到幼兒園的時候他就在的呢?
-  宥彤:我覺得是晏婷老師
-  語希:是園長媽咪
+        <textarea id="formAct1Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
 主要活動
-  1. 邀請老師分享學校的故事
-  2. 團討/分享自己最喜歡園內哪個地方？
-綜合活動
-  與同儕分享學習單內容</textarea>
+綜合活動</textarea>
         <div class="flex items-center gap-2">
           <span class="text-slate-500 font-semibold">活動照片(可上傳1~2張)：</span>
           <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act1')" class="text-xs text-slate-500">
@@ -231,16 +223,12 @@
       <!-- 活動二 -->
       <div class="p-3 bg-slate-50 border rounded-lg">
         <div class="flex justify-between items-center mb-1">
-          <input type="text" id="formAct2Title" value="【活動二：心中的山佳】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
+          <input type="text" id="formAct2Title" value="【活動二:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
           <button onclick="openPicker('act2')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇指標庫 (小指標)</button>
         </div>
-        <textarea id="formAct2Content" rows="7" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
-  除了去公園還去過哪些地方？（從學校出發）
+        <textarea id="formAct2Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
 主要活動
-  1. 團討/分享學校附近有什麼商家、店面？做什麼？
-  2. 統整討論內容
-綜合活動
-  預告下堂課要出門踏查</textarea>
+綜合活動</textarea>
         <div class="flex items-center gap-2">
           <span class="text-slate-500 font-semibold">活動照片(可上傳1~2張)：</span>
           <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act2')" class="text-xs text-slate-500">
@@ -250,17 +238,12 @@
       <!-- 活動三 -->
       <div class="p-3 bg-slate-50 border rounded-lg">
         <div class="flex justify-between items-center mb-1">
-          <input type="text" id="formAct3Title" value="【活動三：我的鄰居（一）】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
+          <input type="text" id="formAct3Title" value="【活動三:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
           <button onclick="openPicker('act3')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇指標庫 (小指標)</button>
         </div>
-        <textarea id="formAct3Content" rows="7" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
-  回顧「心中的山佳」活動
+        <textarea id="formAct3Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
 主要活動
-  1. 團討/分享要出發的方向？
-  2. 行前注意事項
-  3. 出門踏查
-綜合活動
-  與同儕相互分享踏查心得</textarea>
+綜合活動</textarea>
         <div class="flex items-center gap-2">
           <span class="text-slate-500 font-semibold">活動照片(可上傳1~2張)：</span>
           <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act3')" class="text-xs text-slate-500">
@@ -268,19 +251,19 @@
       </div>
     </div>
 
-    <!-- 學習區、母語、省思 -->
+    <!-- 學習區、母語、省思 (名稱精簡、無預設文字) -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs mb-3">
       <div>
-        <label class="block font-bold mb-1 text-slate-700">【學習區】內容編輯：</label>
-        <textarea id="formLearningArea" rows="2" oninput="syncPreview()" class="w-full border p-2 rounded">*美勞區/完成學習單</textarea>
+        <label class="block font-bold mb-1 text-slate-700">【學習區】：</label>
+        <textarea id="formLearningArea" rows="2" oninput="syncPreview()" class="w-full border p-2 rounded" placeholder="填寫學習區規劃..."></textarea>
       </div>
       <div>
-        <label class="block font-bold mb-1 text-slate-700">【母語教學】內容編輯：</label>
-        <textarea id="formMotherTongue" rows="2" oninput="syncPreview()" class="w-full border p-2 rounded"></textarea>
+        <label class="block font-bold mb-1 text-slate-700">【母語教學】：</label>
+        <textarea id="formMotherTongue" rows="2" oninput="syncPreview()" class="w-full border p-2 rounded" placeholder="填寫母語歌詞或教學內容..."></textarea>
       </div>
       <div class="md:col-span-2">
-        <label class="block font-bold mb-1 text-slate-700">【教學省思】內容編輯：</label>
-        <textarea id="formReflection" rows="3" oninput="syncPreview()" class="w-full border p-2 rounded">這週我們帶著孩子們展開了一趟校園之旅。透過繪畫和分享，孩子們表達了自己對校園的喜愛，並展現了豐富的想像力。接著，我們一同探索了校園周邊，並鼓勵孩子們觀察周遭環境，分享有趣的事物。在這次活動中，孩子們的觀察力、表達能力和合作能力都得到了顯著提升。特別是在團體外出活動中，孩子們能更自覺地注意安全，並與同伴合作。不過，在團體討論時，有些孩子仍需要更多的引導，才能更深入地分享自己的想法。</textarea>
+        <label class="block font-bold mb-1 text-slate-700">【教學省思】：</label>
+        <textarea id="formReflection" rows="3" oninput="syncPreview()" class="w-full border p-2 rounded" placeholder="填寫本週教學省思與觀察..."></textarea>
       </div>
     </div>
   </section>
@@ -522,9 +505,9 @@
 
     // 當前已選小指標
     const currentActivityIndicators = {
-      act1: indicatorsDB.find(i => i.smallCode === '語-大-1-1-2'),
-      act2: indicatorsDB.find(i => i.smallCode === '語-大-2-2-3'),
-      act3: indicatorsDB.find(i => i.smallCode === '社-大-1-5-1')
+      act1: null,
+      act2: null,
+      act3: null
     };
 
     let activeActivityKey = '';
@@ -770,9 +753,7 @@
         document.getElementById(`view${cap}Content`).innerHTML = formatActivityText(document.getElementById(`form${cap}Content`).value);
         
         const ind = currentActivityIndicators[act];
-        if (ind) {
-          document.getElementById(`view${cap}IndicatorCode`).innerText = `${ind.smallCode}\n${ind.smallName}`;
-        }
+        document.getElementById(`view${cap}IndicatorCode`).innerText = ind ? `${ind.smallCode}\n${ind.smallName}` : '';
       });
 
       // 學習區、母語、省思
@@ -805,8 +786,31 @@
     }
 
     // 初始化
-    document.getElementById('formMotherTongue').value = nurseryRhymesDB['第一週'];
-    syncPreview();
+    // 記憶使用者選擇的年齡層/班級
+    function handleClassLevelChange(val) {
+      if (val) localStorage.setItem('fuya_saved_classLevel', val);
+      syncPreview();
+    }
+
+    // 自動計算當前民國學年度 (8月後為新年，8月前為舊年)
+    function initDefaultSettings() {
+      const now = new Date();
+      const rocYear = now.getFullYear() - 1911;
+      const month = now.getMonth() + 1;
+      const autoSchoolYear = (month >= 8) ? rocYear : (rocYear - 1);
+      
+      document.getElementById('formYear').value = autoSchoolYear;
+      document.getElementById('formSemester').value = "第一學期";
+
+      // 讀取瀏覽器記憶的常用年齡層/班級
+      const savedClass = localStorage.getItem('fuya_saved_classLevel') || '大班';
+      document.getElementById('formClassLevel').value = savedClass;
+
+      syncPreview();
+    }
+
+    // 啟動執行初始化
+    initDefaultSettings();
   // ==========================================
     // 雲端 GAS 串接設定 (請替換下方的 GAS 網址)
     // ==========================================
