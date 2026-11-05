@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>新北市私立富雅幼兒園 - 主題教學活動週誌系統</title>
+  <title>幼兒園 - 主題教學活動週誌系統</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @page {
@@ -31,7 +31,7 @@
       td, th { border: 1.2px solid black !important; }
     }
 
-    /* 嚴格鎖定 B～H 欄比例 (對照圖二) */
+    /* 嚴格鎖定 B～H 欄比例 (對照官方格式) */
     .official-table {
       table-layout: fixed;
       width: 100%;
@@ -48,7 +48,7 @@
       overflow-wrap: break-word;
     }
 
-    /* 活動文字排版：標題粗體、內文縮排 (對齊圖三) */
+    /* 活動文字排版：標題粗體、內文自動縮排 */
     .act-heading {
       font-weight: bold;
       color: #000;
@@ -72,8 +72,9 @@
     <div class="flex items-center gap-2">
       <button onclick="toggleEditDrawer()" class="px-3 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 transition">
         ✏️ 開啟/收合編輯區
+      </button>
       <button onclick="saveWeeklyLogToCloud()" id="btnSaveCloud" class="px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition flex items-center gap-1 shadow-sm">
-  💾 儲存此週至雲端
+        💾 儲存此週至雲端
       </button>
       <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition flex items-center gap-1 shadow-sm">
         🖨️ 列印標準 A4 週誌 (PDF)
@@ -94,7 +95,7 @@
       </div>
     </div>
 
-<!-- 6大領域卡片 (大字：學期總累計 / 小字：當週) -->
+    <!-- 6大領域卡片 (大字：學期總累計 / 小字：當週) -->
     <div class="grid grid-cols-6 gap-2 text-center select-none">
       <div onclick="showDetailsByDomain('身')" class="domain-card bg-red-50 border border-red-200 p-2 rounded-lg cursor-pointer hover:bg-red-100 transition">
         <div class="text-[11px] text-red-600 font-bold truncate">身體動作與健康</div>
@@ -128,7 +129,7 @@
       </div>
     </div>
 
-    <!-- 詳細清單 -->
+    <!-- 詳細清單 (支援依週次/依領域排序) -->
     <div id="detailsDrawer" class="mt-4 pt-3 border-t border-slate-200 text-xs bg-slate-50 p-3 rounded-lg">
       <div class="font-bold text-slate-700 mb-2 flex flex-wrap items-center justify-between gap-2">
         <span id="detailFilterTitle">已選擇的指標明細：</span>
@@ -149,7 +150,7 @@
         <span>✏️ 週誌完整編輯區</span>
         <span class="text-xs font-normal text-slate-500">（此處修改下方模板即時連動同步）</span>
       </h3>
-<!-- 歷史載入、新增與自動存檔狀態 -->
+      <!-- 歷史載入、新增與自動存檔狀態 -->
       <div class="flex flex-wrap items-center gap-2">
         <span id="cloudAutoSaveStatus" class="text-[11px] font-mono text-slate-400">☁️ 雲端狀態：就緒</span>
         <button type="button" onclick="createNewBlankLog()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow-sm flex items-center gap-1">
@@ -164,8 +165,8 @@
       </div>
     </div>
 
-    <!-- 表頭四大項目編輯 (自動學年、學期、年齡記憶選單) -->
-    <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-4 text-xs">
+    <!-- 表頭項目編輯 -->
+    <div class="grid grid-cols-2 md:grid-cols-7 gap-2 mb-4 text-xs">
       <div class="md:col-span-2">
         <label class="block font-bold mb-1 text-slate-600">幼兒園名稱：</label>
         <input type="text" id="formSchoolName" value="新北市私立富雅幼兒園" oninput="handleSchoolNameChange(this.value)" class="w-full border p-1.5 rounded font-bold text-indigo-900" placeholder="例: 新北市私立富雅幼兒園">
@@ -203,7 +204,7 @@
       </div>
     </div>
 
-    <!-- 教師、主題、概念、資源 (空白預設) -->
+    <!-- 教師、主題、概念、資源 -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4 text-xs">
       <div>
         <label class="block font-bold mb-1 text-slate-600">教師：</label>
@@ -223,55 +224,52 @@
       </div>
     </div>
 
-    <!-- 三大活動編輯區 (標準三段式結構) -->
-    <div class="space-y-3 text-xs mb-4">
+    <!-- 三大活動編輯區 (支援多指標與獨立照片) -->
+    <div class="space-y-4 text-xs mb-4">
       <!-- 活動一 -->
       <div class="p-3 bg-slate-50 border rounded-lg">
         <div class="flex justify-between items-center mb-1">
           <input type="text" id="formAct1Title" value="【活動一:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
-          <button onclick="openPicker('act1')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇指標庫 (小指標)</button>
+          <button type="button" onclick="addActivityIndicator('act1')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
+            ＋ 新增第 2 個指標
+          </button>
         </div>
         <textarea id="formAct1Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
 主要活動
 綜合活動</textarea>
-        <div class="flex items-center gap-2">
-          <span class="text-slate-500 font-semibold">活動照片(可上傳1~2張)：</span>
-          <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act1')" class="text-xs text-slate-500">
-        </div>
+        <div id="formAct1IndicatorBoxes" class="space-y-2 mt-2"></div>
       </div>
 
       <!-- 活動二 -->
       <div class="p-3 bg-slate-50 border rounded-lg">
         <div class="flex justify-between items-center mb-1">
           <input type="text" id="formAct2Title" value="【活動二:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
-          <button onclick="openPicker('act2')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇指標庫 (小指標)</button>
+          <button type="button" onclick="addActivityIndicator('act2')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
+            ＋ 新增第 2 個指標
+          </button>
         </div>
         <textarea id="formAct2Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
 主要活動
 綜合活動</textarea>
-        <div class="flex items-center gap-2">
-          <span class="text-slate-500 font-semibold">活動照片(可上傳1~2張)：</span>
-          <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act2')" class="text-xs text-slate-500">
-        </div>
+        <div id="formAct2IndicatorBoxes" class="space-y-2 mt-2"></div>
       </div>
 
       <!-- 活動三 -->
       <div class="p-3 bg-slate-50 border rounded-lg">
         <div class="flex justify-between items-center mb-1">
           <input type="text" id="formAct3Title" value="【活動三:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
-          <button onclick="openPicker('act3')" class="px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">🔍 選擇指標庫 (小指標)</button>
+          <button type="button" onclick="addActivityIndicator('act3')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
+            ＋ 新增第 2 個指標
+          </button>
         </div>
         <textarea id="formAct3Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
 主要活動
 綜合活動</textarea>
-        <div class="flex items-center gap-2">
-          <span class="text-slate-500 font-semibold">活動照片(可上傳1~2張)：</span>
-          <input type="file" accept="image/*" multiple onchange="handleImageUpload(event, 'act3')" class="text-xs text-slate-500">
-        </div>
+        <div id="formAct3IndicatorBoxes" class="space-y-2 mt-2"></div>
       </div>
     </div>
 
-    <!-- 學習區、母語、省思 (名稱精簡、無預設文字) -->
+    <!-- 學習區、母語、省思 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs mb-3">
       <div>
         <label class="block font-bold mb-1 text-slate-700">【學習區】：</label>
@@ -288,25 +286,23 @@
     </div>
   </section>
 
-
   <!-- =========================================================================
-       標準校園 A4 模板區 (完全吻合圖二 B~H 欄結構，無多餘空白、無雙重內框)
+       標準校園 A4 模板區
        ========================================================================= -->
   <main class="print-page max-w-5xl mx-auto bg-white p-4 md:p-8 shadow-lg border border-slate-300 relative">
     
-    <!-- 左上角預覽標籤 (no-print) -->
     <div class="no-print absolute top-2 left-2 px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded">
       📄【週誌標準模板預覽】
     </div>
 
-    <!-- 表頭 (移除下邊距空白，對齊圖五修復) -->
+    <!-- 表頭 (支援園名即時同步) -->
     <div class="text-center official-title mb-1.5">
       <h2 class="text-lg md:text-xl font-bold tracking-wider" style="font-family: 'DFKai-SB', '標楷體';">
         <span id="viewSchoolName">新北市私立富雅幼兒園</span><span id="viewYear">113</span>學年度<span id="viewSemester">第一學期</span>主題教學活動週誌【<span id="viewClassLevel">大班</span>】
       </h2>
     </div>
 
-    <!-- 正式表格：嚴格對照圖二 B、C、D、E、F、G、H 欄比例 -->
+    <!-- 正式表格：B~H 欄比例 -->
     <table class="official-table">
       <colgroup>
         <col style="width: 8%;">  <!-- Col B: 週次 / 主題名稱 / 課程目標 / 教學資源 -->
@@ -315,7 +311,7 @@
         <col style="width: 24%;"> <!-- Col E: 113/08/12-113/08/16 -->
         <col style="width: 11%;"> <!-- Col F: 教師 / 主要概念 -->
         <col style="width: 15%;"> <!-- Col G: 教師姓名 / 概念名稱 -->
-        <col style="width: 20%;"> <!-- Col H: 【學習指標】(校正至圖二寬度，不再過寬) -->
+        <col style="width: 20%;"> <!-- Col H: 【學習指標】 -->
       </colgroup>
       <tbody>
         <!-- 列 1：週次、活動日期、教師 -->
@@ -323,16 +319,16 @@
           <td class="font-bold text-center">週次</td>
           <td class="text-center" id="viewWeek">第一週</td>
           <td class="font-bold text-center leading-tight">活動<br>日期</td>
-          <td class="text-center font-mono" id="viewDate">113/08/12-113/08/16</td>
+          <td class="text-center font-mono" id="viewDate"></td>
           <td class="font-bold text-center">教師</td>
-          <td colspan="2" class="text-center" id="viewTeacher">李晏婷、陳聖勳</td>
+          <td colspan="2" class="text-center" id="viewTeacher"></td>
         </tr>
         <!-- 列 2：主題名稱、主要概念 -->
         <tr>
           <td class="font-bold text-center leading-tight">主題<br>名稱</td>
-          <td colspan="3" class="text-center" id="viewTheme">小腳ㄚ逛社區</td>
+          <td colspan="3" class="text-center" id="viewTheme"></td>
           <td class="font-bold text-center">主要概念</td>
-          <td colspan="2" class="text-center" id="viewConcept">大富翁</td>
+          <td colspan="2" class="text-center" id="viewConcept"></td>
         </tr>
         <!-- 列 3：課程目標 -->
         <tr>
@@ -342,7 +338,7 @@
         <!-- 列 4：教學資源 -->
         <tr>
           <td class="font-bold text-center leading-tight">教學<br>資源</td>
-          <td colspan="6" id="viewResources">白板、學習單、社區</td>
+          <td colspan="6" id="viewResources"></td>
         </tr>
 
         <!-- 列 5：活動設計 (B~G欄: 80%) 與 學習指標 (H欄: 20%) 標題 -->
@@ -354,44 +350,35 @@
         <!-- 活動一 -->
         <tr>
           <td colspan="6" class="align-top p-2 leading-relaxed">
-            <div class="font-bold mb-1" id="viewAct1Title">【活動一:學校的故事】（做學習單）</div>
+            <div class="font-bold mb-1" id="viewAct1Title">【活動一:  】</div>
             <div id="viewAct1Content"></div>
           </td>
-          <td class="align-top p-2 bg-white">
-            <div class="font-bold text-xs mb-1" id="viewAct1IndicatorCode"></div>
-            <div id="viewAct1Photos" class="grid grid-cols-1 gap-1"></div>
-          </td>
+          <td class="align-top p-2 bg-white" id="viewAct1IndicatorCell"></td>
         </tr>
 
         <!-- 活動二 -->
         <tr>
           <td colspan="6" class="align-top p-2 leading-relaxed">
-            <div class="font-bold mb-1" id="viewAct2Title">【活動二：心中的山佳】</div>
+            <div class="font-bold mb-1" id="viewAct2Title">【活動二:  】</div>
             <div id="viewAct2Content"></div>
           </td>
-          <td class="align-top p-2 bg-white">
-            <div class="font-bold text-xs mb-1" id="viewAct2IndicatorCode"></div>
-            <div id="viewAct2Photos" class="grid grid-cols-1 gap-1"></div>
-          </td>
+          <td class="align-top p-2 bg-white" id="viewAct2IndicatorCell"></td>
         </tr>
 
         <!-- 活動三 -->
         <tr>
           <td colspan="6" class="align-top p-2 leading-relaxed">
-            <div class="font-bold mb-1" id="viewAct3Title">【活動三：我的鄰居（一）】</div>
+            <div class="font-bold mb-1" id="viewAct3Title">【活動三:  】</div>
             <div id="viewAct3Content"></div>
           </td>
-          <td class="align-top p-2 bg-white">
-            <div class="font-bold text-xs mb-1" id="viewAct3IndicatorCode"></div>
-            <div id="viewAct3Photos" class="grid grid-cols-1 gap-1"></div>
-          </td>
+          <td class="align-top p-2 bg-white" id="viewAct3IndicatorCell"></td>
         </tr>
 
-        <!-- 學習區 (B~E欄) 與 母語教學 (F~H欄) - 不用巢狀表格，徹底消除雙重內框！ -->
+        <!-- 學習區 (B~E欄) 與 母語教學 (F~H欄) -->
         <tr>
           <td colspan="4" class="p-2 font-bold align-top">
             【學習區】
-            <div class="font-normal mt-1 whitespace-pre-line text-xs" id="viewLearningArea">*美勞區/完成學習單</div>
+            <div class="font-normal mt-1 whitespace-pre-line text-xs" id="viewLearningArea"></div>
           </td>
           <td colspan="3" class="p-2 font-bold align-top">
             【母語教學】
@@ -409,19 +396,17 @@
       </tbody>
     </table>
 
-    <!-- 底部審核簽章 (完全符合圖一、圖二) -->
+    <!-- 底部審核簽章 -->
     <div class="flex justify-between items-center text-xs md:text-sm font-bold mt-2 px-2" style="font-family: 'DFKai-SB', '標楷體';">
       <div>園長：</div>
       <div>主任：</div>
-      <div>紀錄：<span id="viewSignRecord">李晏婷、陳聖勳</span></div>
+      <div>紀錄：<span id="viewSignRecord"></span></div>
     </div>
   </main>
 
-
-  <!-- ======================== 指標選擇器 Modal (兩層式點選) ======================== -->
+  <!-- ======================== 指標選擇器 Modal ======================== -->
   <div id="pickerModal" class="no-print fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-3">
     <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-      <!-- Modal Header -->
       <div class="p-4 bg-indigo-600 text-white flex justify-between items-center">
         <div>
           <h3 class="font-bold text-base md:text-lg">幼兒園教保課程大綱學習指標庫</h3>
@@ -430,7 +415,6 @@
         <button onclick="closePicker()" class="text-white hover:text-indigo-200 text-2xl font-bold">&times;</button>
       </div>
 
-      <!-- 年齡層切換 -->
       <div class="flex bg-indigo-50 border-b p-2 gap-2 text-xs font-bold items-center">
         <span class="text-slate-600">班級年齡層：</span>
         <button onclick="changeAgeGroup('大班')" id="age-大班" class="age-tab px-3 py-1 rounded bg-indigo-600 text-white">大班 (5-6歲)</button>
@@ -439,7 +423,6 @@
         <button onclick="changeAgeGroup('幼幼班')" id="age-幼幼班" class="age-tab px-3 py-1 rounded bg-white text-slate-700 border">幼幼班 (2-3歲)</button>
       </div>
 
-      <!-- 領域分頁按鈕 -->
       <div class="flex border-b bg-slate-50 p-2 gap-1 overflow-x-auto text-xs font-bold" id="domainTabs">
         <button onclick="switchDomain('ALL')" class="domain-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white whitespace-nowrap">全部領域</button>
         <button onclick="switchDomain('身')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 whitespace-nowrap">身體動作與健康</button>
@@ -450,7 +433,6 @@
         <button onclick="switchDomain('情')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 whitespace-nowrap">情緒</button>
       </div>
 
-      <!-- 返回大指標按鈕 -->
       <div id="backToBigBtnContainer" class="hidden bg-amber-50 p-2 border-b border-amber-200 flex justify-between items-center text-xs">
         <button onclick="backToBigGoalsList()" class="text-indigo-700 font-bold hover:underline flex items-center gap-1">
           ← 返回課程目標列表
@@ -458,10 +440,8 @@
         <span id="currentSelectedBigTitle" class="font-semibold text-amber-900 truncate"></span>
       </div>
 
-      <!-- 指標清單 -->
       <div class="p-4 overflow-y-auto flex-1 space-y-2 text-xs md:text-sm" id="modalIndicatorsList"></div>
 
-      <!-- Modal Footer -->
       <div class="p-3 bg-slate-100 border-t flex justify-end">
         <button onclick="closePicker()" class="px-4 py-1.5 bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold">關閉取消</button>
       </div>
@@ -514,36 +494,29 @@
       { age: '大班', domain: '情', bigCode: '情-4-1', bigName: '運用策略調節自己的情緒', smallCode: '情-大-4-1-1', smallName: '運用等待或改變想法的策略調節自己的情緒' }
     ];
 
-    // 2. 囝仔歌資料庫
-    const nurseryRhymesDB = {
-      '第一週': "手指謠（1）\n一支手指頭仔 一支手指頭仔 \n變ah變ah變\n變做杜蚓仔",
-      '第二週': "手指謠（2）\n兩支手指頭仔 兩支手指頭仔\n變ah變ah變\n變做白兔仔",
-      '第三週': "手指謠（3）\n三支手指頭仔 三支手指頭仔\n變ah變ah變\n變做花貓仔",
-      '第四週': "手指謠（4）\n四支手指頭仔 四支手指頭仔\n變ah變ah變\n變做媠蝶仔",
-      '第五週': "手指謠（5）\n五支手指頭仔 五支手指頭仔\n變ah變ah變\n咱來phah pho̍k-á"
+    // 2. 活動區塊資料模型 (支援每個活動 1~2 個指標，各自綁定照片)
+    let activityBlocks = {
+      act1: [{ indicator: null, photos: [] }],
+      act2: [{ indicator: null, photos: [] }],
+      act3: [{ indicator: null, photos: [] }]
     };
 
-    // 當前已選小指標
-    const currentActivityIndicators = {
-      act1: null,
-      act2: null,
-      act3: null
-    };
-
-    // 加上這行（放在最上方供全域調用）
+    let targetActKey = 'act1';
+    let targetBlockIndex = 0;
     let currentWeekCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
-
     let cachedCloudLogs = [];
-    // 幼兒園名稱變更與記憶函式 (放在最上方確保隨時調用)
+    let currentDetailSort = 'week';
+    let currentDetailFilterDomain = 'ALL';
+
+    let currentModalAge = '大班';
+    let currentModalDomain = 'ALL';
+    let selectedBigCode = null;
+
+    // 幼兒園名稱即時記憶
     function handleSchoolNameChange(val) {
       if (val) localStorage.setItem('fuya_saved_schoolName', val);
       syncPreview();
     }
-    let activeActivityKey = '';
-    let currentModalAge = '大班';
-    let currentModalDomain = 'ALL';
-    let selectedBigCode = null;
-    let currentDetailFilterDomain = 'ALL';
 
     // 智慧段落格式化引擎
     function formatActivityText(raw) {
@@ -559,9 +532,10 @@
       }).join('');
     }
 
-    // Modal 控制
-    function openPicker(actKey) {
-      activeActivityKey = actKey;
+    // 開啟指標挑選器 (指定活動與第幾項指標)
+    function openPickerForBlock(actKey, index) {
+      targetActKey = actKey;
+      targetBlockIndex = index;
       selectedBigCode = null;
       switchDomain('ALL');
       document.getElementById('pickerModal').classList.remove('hidden');
@@ -571,6 +545,95 @@
       document.getElementById('pickerModal').classList.add('hidden');
     }
 
+    // 新增活動的第 2 個指標
+    function addActivityIndicator(actKey) {
+      if (activityBlocks[actKey].length >= 2) {
+        alert("單一活動最多支援 2 組指標與對應照片組合！");
+        return;
+      }
+      activityBlocks[actKey].push({ indicator: null, photos: [] });
+      renderActivityEditBoxes();
+      syncPreview();
+    }
+
+    // 移除第 2 個指標
+    function removeActivityIndicator(actKey, index) {
+      activityBlocks[actKey].splice(index, 1);
+      renderActivityEditBoxes();
+      syncPreview();
+    }
+
+    // 處理獨立上傳照片 (追加方式，不覆蓋舊照片)
+    function handleBlockPhotoUpload(e, actKey, index) {
+      const files = Array.from(e.target.files);
+      const block = activityBlocks[actKey][index];
+      
+      files.forEach(file => {
+        if (block.photos.length >= 2) return; // 每個指標最多 2 張
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          block.photos.push(event.target.result);
+          renderActivityEditBoxes();
+          syncPreview();
+        };
+        reader.readAsDataURL(file);
+      });
+      e.target.value = '';
+    }
+
+    // 刪除單張照片
+    function removeBlockPhoto(actKey, blockIdx, photoIdx) {
+      activityBlocks[actKey][blockIdx].photos.splice(photoIdx, 1);
+      renderActivityEditBoxes();
+      syncPreview();
+    }
+
+    // 渲染編輯區中的指標選擇按鈕與獨立照片縮圖
+    function renderActivityEditBoxes() {
+      ['act1', 'act2', 'act3'].forEach(actKey => {
+        const container = document.getElementById(`form${actKey.charAt(0).toUpperCase() + actKey.slice(1)}IndicatorBoxes`);
+        if (!container) return;
+        container.innerHTML = '';
+
+        activityBlocks[actKey].forEach((block, idx) => {
+          const box = document.createElement('div');
+          box.className = 'p-2 bg-white border border-slate-200 rounded flex flex-col gap-1.5';
+          const indText = block.indicator ? `${block.indicator.smallCode} ${block.indicator.smallName}` : '（尚未選擇指標）';
+
+          box.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-indigo-700">指標項目 ${idx + 1}：<span class="font-normal text-slate-800">${indText}</span></span>
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="openPickerForBlock('${actKey}', ${idx})" class="px-2 py-0.5 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700">🔍 挑選指標</button>
+                ${idx > 0 ? `<button type="button" onclick="removeActivityIndicator('${actKey}', ${idx})" class="px-2 py-0.5 bg-red-100 text-red-600 rounded text-[11px] font-bold hover:bg-red-200">🗑️ 移除</button>` : ''}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
+              <label class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border cursor-pointer text-[11px]">
+                📷 加入照片 (最多2張)
+                <input type="file" accept="image/*" multiple onchange="handleBlockPhotoUpload(event, '${actKey}', ${idx})" class="hidden">
+              </label>
+              <div class="flex gap-1.5" id="thumbs-${actKey}-${idx}"></div>
+            </div>
+          `;
+
+          const thumbsDiv = box.querySelector(`#thumbs-${actKey}-${idx}`);
+          block.photos.forEach((src, pIdx) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'relative group w-10 h-10 border rounded overflow-hidden shadow-xs';
+            thumb.innerHTML = `
+              <img src="${src}" class="w-full h-full object-cover">
+              <button type="button" onclick="removeBlockPhoto('${actKey}', ${idx}, ${pIdx})" class="absolute top-0 right-0 bg-red-600 text-white w-4 h-4 text-[10px] flex items-center justify-center font-bold">×</button>
+            `;
+            thumbsDiv.appendChild(thumb);
+          });
+
+          container.appendChild(box);
+        });
+      });
+    }
+
+    // Modal 年齡層與領域控制
     function changeAgeGroup(age) {
       currentModalAge = age;
       document.querySelectorAll('.age-tab').forEach(t => t.className = 'age-tab px-3 py-1 rounded bg-white text-slate-700 border');
@@ -594,7 +657,7 @@
       renderModalContent();
     }
 
-    // 兩層式渲染
+    // 兩層式指標渲染
     function renderModalContent() {
       const listEl = document.getElementById('modalIndicatorsList');
       const backContainer = document.getElementById('backToBigBtnContainer');
@@ -662,7 +725,8 @@
             </button>
           `;
           card.onclick = () => {
-            currentActivityIndicators[activeActivityKey] = item;
+            activityBlocks[targetActKey][targetBlockIndex].indicator = item;
+            renderActivityEditBoxes();
             syncPreview();
             closePicker();
           };
@@ -685,30 +749,9 @@
       }
     }
 
-    // 照片上傳
-    function handleImageUpload(e, actKey) {
-      const files = e.target.files;
-      const targetPhotoDiv = document.getElementById(`view${actKey.charAt(0).toUpperCase() + actKey.slice(1)}Photos`);
-      targetPhotoDiv.innerHTML = '';
-
-      Array.from(files).slice(0, 2).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = document.createElement('img');
-          img.src = event.target.result;
-          img.className = 'w-full max-h-[75px] object-cover rounded border border-black';
-          targetPhotoDiv.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // 週次輸入
+    // 週次輸入連動
     function handleWeekInputChange(weekVal) {
       document.getElementById('viewWeek').innerText = weekVal;
-      if (nurseryRhymesDB[weekVal]) {
-        document.getElementById('formMotherTongue').value = nurseryRhymesDB[weekVal];
-      }
       syncPreview();
     }
 
@@ -717,8 +760,8 @@
       currentDetailFilterDomain = domain;
       const titleEl = document.getElementById('detailFilterTitle');
       titleEl.innerText = domain === 'ALL' 
-        ? '已選擇的指標明細（大指標在前，小指標在後）：' 
-        : `已選擇【${domain}】領域的指標明細（大指標在前，小指標在後）：`;
+        ? '已選擇的指標明細：' 
+        : `已選擇【${domain}】領域的指標明細：`;
 
       document.getElementById('detailsDrawer').classList.remove('hidden');
       document.getElementById('toggleBtn').innerText = '收合指標細節 ▲';
@@ -741,9 +784,7 @@
       document.getElementById('editDrawer').classList.toggle('hidden');
     }
 
-    // 排序模式：'week' (週次) 或 'domain' (身認語社美情)
-    let currentDetailSort = 'week';
-
+    // 排序控制
     function setDetailSort(mode) {
       currentDetailSort = mode;
       document.getElementById('btnSortWeek').className = mode === 'week' 
@@ -755,7 +796,7 @@
       renderDetailsList();
     }
 
-    // 渲染指標明細清單 (支援雙重排序 + 領域專屬色彩)
+    // 渲染指標明細清單 (色彩徽章 + 排序)
     function renderDetailsList() {
       const listEl = document.getElementById('selectedIndicatorsList');
       if (!listEl) return;
@@ -763,7 +804,6 @@
       const activeWeek = document.getElementById('formWeek').value.trim();
       const allItems = [];
 
-      // 領域專屬色彩標籤樣式
       const domainStyles = {
         '身': 'bg-red-100 text-red-800 border-red-300',
         '認': 'bg-amber-100 text-amber-800 border-amber-300',
@@ -780,18 +820,22 @@
             ['活動一指標', '活動二指標', '活動三指標'].forEach(col => {
               const val = row[col];
               if (val) {
-                const code = val.split('\n')[0].trim();
-                const ind = indicatorsDB.find(i => i.smallCode === code);
-                if (ind) allItems.push({ week: row['週次'], ...ind });
+                val.split(';;').forEach(part => {
+                  const code = part.split('\n')[0].trim();
+                  const ind = indicatorsDB.find(i => i.smallCode === code);
+                  if (ind) allItems.push({ week: row['週次'], ...ind });
+                });
               }
             });
           }
         });
       }
 
-      // 2. 抓取當前編輯中週次指標
-      Object.values(currentActivityIndicators).forEach(ind => {
-        if (ind) allItems.push({ week: activeWeek || '當週', ...ind });
+      // 2. 抓取當前編輯中週次指標 (多指標支援)
+      Object.values(activityBlocks).forEach(blocks => {
+        blocks.forEach(b => {
+          if (b.indicator) allItems.push({ week: activeWeek || '當週', ...b.indicator });
+        });
       });
 
       // 3. 領域過濾
@@ -828,13 +872,17 @@
         listEl.appendChild(div);
       });
     }
-    
-const schoolName = document.getElementById('formSchoolName').value || '幼兒園';
-      document.getElementById('headerSchoolName').innerText = schoolName;
-      document.getElementById('viewSchoolName').innerText = schoolName;
-    
-    // 同步前台所有欄位
-    function syncPreview() {      
+
+    // ==========================================
+    // 同步前台所有欄位 (重要核心)
+    // ==========================================
+    function syncPreview() {
+      // 1. 幼兒園名稱即時強制同步
+      const schoolName = document.getElementById('formSchoolName')?.value.trim() || '新北市私立富雅幼兒園';
+      if (document.getElementById('headerSchoolName')) document.getElementById('headerSchoolName').innerText = schoolName;
+      if (document.getElementById('viewSchoolName')) document.getElementById('viewSchoolName').innerText = schoolName;
+
+      // 2. 表頭基礎欄位同步
       document.getElementById('viewYear').innerText = document.getElementById('formYear').value;
       document.getElementById('viewSemester').innerText = document.getElementById('formSemester').value;
       document.getElementById('viewClassLevel').innerText = document.getElementById('formClassLevel').value;
@@ -846,30 +894,55 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
       document.getElementById('viewResources').innerText = document.getElementById('formResources').value;
       document.getElementById('viewSignRecord').innerText = document.getElementById('formTeacher').value;
 
-      // 活動內容與智慧縮排
+      // 3. 活動內容與學習指標 (支援每活動多指標 + 獨立照片)
       ['act1', 'act2', 'act3'].forEach(act => {
         const cap = act.charAt(0).toUpperCase() + act.slice(1);
         document.getElementById(`view${cap}Title`).innerText = document.getElementById(`form${cap}Title`).value;
         document.getElementById(`view${cap}Content`).innerHTML = formatActivityText(document.getElementById(`form${cap}Content`).value);
-        
-        const ind = currentActivityIndicators[act];
-        document.getElementById(`view${cap}IndicatorCode`).innerText = ind ? `${ind.smallCode}\n${ind.smallName}` : '';
+
+        const indCell = document.getElementById(`view${cap}IndicatorCell`);
+        if (indCell) {
+          indCell.innerHTML = '';
+          activityBlocks[act].forEach((block, bIdx) => {
+            if (block.indicator) {
+              const blkEl = document.createElement('div');
+              blkEl.className = bIdx > 0 ? 'mt-2 pt-2 border-t border-slate-300' : '';
+              blkEl.innerHTML = `<div class="font-bold text-xs leading-tight mb-1">${block.indicator.smallCode}<br>${block.indicator.smallName}</div>`;
+
+              // 照片排在該小指標正下方
+              if (block.photos && block.photos.length > 0) {
+                const photoWrap = document.createElement('div');
+                photoWrap.className = 'grid grid-cols-1 gap-1 my-1';
+                block.photos.forEach(src => {
+                  photoWrap.innerHTML += `<img src="${src}" class="w-full max-h-[75px] object-cover rounded border border-black">`;
+                });
+                blkEl.appendChild(photoWrap);
+              }
+              indCell.appendChild(blkEl);
+            }
+          });
+        }
       });
 
-      // 學習區、母語、省思
+      // 4. 學習區、母語、省思
       document.getElementById('viewLearningArea').innerText = document.getElementById('formLearningArea').value;
       document.getElementById('viewMotherTongue').innerText = document.getElementById('formMotherTongue').value;
       document.getElementById('viewReflection').innerText = document.getElementById('formReflection').value;
 
-      // 領域計數與課程目標自動產生
+      // 5. 彙整所有指標 $\to$ 計算領域次數與表頭大指標
+      const allActiveIndicators = [];
+      Object.values(activityBlocks).forEach(blocks => {
+        blocks.forEach(b => {
+          if (b.indicator) allActiveIndicators.push(b.indicator);
+        });
+      });
+
       const domainCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
       const bigGoalsMap = new Map();
 
-      Object.values(currentActivityIndicators).forEach(ind => {
-        if (ind) {
-          domainCounts[ind.domain]++;
-          bigGoalsMap.set(ind.bigCode, ind.bigName);
-        }
+      allActiveIndicators.forEach(ind => {
+        domainCounts[ind.domain]++;
+        bigGoalsMap.set(ind.bigCode, ind.bigName);
       });
 
       currentWeekCounts = domainCounts;
@@ -884,17 +957,17 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
       renderDetailsList();
     }
 
-    // 初始化
-    // 記憶使用者選擇的年齡層/班級
+    // 班級記憶
     function handleClassLevelChange(val) {
       if (val) localStorage.setItem('fuya_saved_classLevel', val);
       syncPreview();
     }
 
-    // 自動計算當前民國學年度 (8月後為新年，8月前為舊年)
+    // 初始化設定
     function initDefaultSettings() {
       const savedSchool = localStorage.getItem('fuya_saved_schoolName') || '新北市私立富雅幼兒園';
       document.getElementById('formSchoolName').value = savedSchool;
+
       const now = new Date();
       const rocYear = now.getFullYear() - 1911;
       const month = now.getMonth() + 1;
@@ -903,26 +976,30 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
       document.getElementById('formYear').value = autoSchoolYear;
       document.getElementById('formSemester').value = "第一學期";
 
-      // 讀取瀏覽器記憶的常用年齡層/班級
       const savedClass = localStorage.getItem('fuya_saved_classLevel') || '大班';
       document.getElementById('formClassLevel').value = savedClass;
 
+      renderActivityEditBoxes();
       syncPreview();
     }
 
-    // 啟動執行初始化
-    initDefaultSettings();
-  // ==========================================
-    // 雲端 GAS 串接設定 (請替換下方的 GAS 網址)
+    // ==========================================
+    // 雲端 GAS 串接設定
     // ==========================================
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxd9Q4r1sVe4T_00CPeRvNOYMvwNkmHJib4leLmRiONMear0grl946FirDAy_f78XmP/exec";
+
+    function serializeActivityIndicators(actKey) {
+      return activityBlocks[actKey]
+        .filter(b => b.indicator)
+        .map(b => `${b.indicator.smallCode}\n${b.indicator.smallName}`)
+        .join(';;');
+    }
 
     async function saveWeeklyLogToCloud(isSilent = false) {
       const btn = document.getElementById('btnSaveCloud');
       const statusEl = document.getElementById('cloudAutoSaveStatus');
       const weekVal = document.getElementById('formWeek').value.trim();
 
-      // 如果週次還是空的或剛開新表，背景自動存檔先不執行
       if (isSilent && (!weekVal || weekVal === '第  週')) return;
 
       if (!isSilent) {
@@ -933,6 +1010,7 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
       }
 
       const payload = {
+        schoolName: document.getElementById('formSchoolName').value.trim() || '新北市私立富雅幼兒園',
         year: document.getElementById('formYear').value,
         semester: document.getElementById('formSemester').value,
         classLevel: document.getElementById('formClassLevel').value,
@@ -951,11 +1029,11 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
           '情': currentWeekCounts['情'] || 0
         },
         act1Content: document.getElementById('formAct1Content').value,
-        act1Indicator: document.getElementById('viewAct1IndicatorCode').innerText,
+        act1Indicator: serializeActivityIndicators('act1'),
         act2Content: document.getElementById('formAct2Content').value,
-        act2Indicator: document.getElementById('viewAct2IndicatorCode').innerText,
+        act2Indicator: serializeActivityIndicators('act2'),
         act3Content: document.getElementById('formAct3Content').value,
-        act3Indicator: document.getElementById('viewAct3IndicatorCode').innerText,
+        act3Indicator: serializeActivityIndicators('act3'),
         learningArea: document.getElementById('formLearningArea').value,
         motherTongue: document.getElementById('formMotherTongue').value,
         reflection: document.getElementById('formReflection').value
@@ -974,7 +1052,7 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
 
         if (!isSilent) {
           alert(`✅ ${payload.week} 週誌已成功儲存至 Google 試算表！`);
-          loadSavedLogsList(); // 重新拉取一次清單
+          loadSavedLogsList();
         }
       } catch (err) {
         if (statusEl) statusEl.innerText = "❌ 雲端同步失敗";
@@ -987,11 +1065,9 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
       }
     }
 
-    // ==========================================
-    // ➕ 一鍵建立新週誌 (清空並載入乾淨範本)
-    // ==========================================
+    // ➕ 一鍵建立新週誌
     function createNewBlankLog() {
-      if (confirm("確定要建立新週誌嗎？目前的未存變更將會清空。")) {
+      if (confirm("確定要建立新週誌嗎？未儲存的內容將被清空。")) {
         document.getElementById('formWeek').value = '第  週';
         document.getElementById('formDate').value = '';
         document.getElementById('formTeacher').value = '';
@@ -1010,26 +1086,23 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
         document.getElementById('formMotherTongue').value = '';
         document.getElementById('formReflection').value = '';
 
-        currentActivityIndicators.act1 = null;
-        currentActivityIndicators.act2 = null;
-        currentActivityIndicators.act3 = null;
+        activityBlocks = {
+          act1: [{ indicator: null, photos: [] }],
+          act2: [{ indicator: null, photos: [] }],
+          act3: [{ indicator: null, photos: [] }]
+        };
 
-        document.getElementById('viewAct1Photos').innerHTML = '';
-        document.getElementById('viewAct2Photos').innerHTML = '';
-        document.getElementById('viewAct3Photos').innerHTML = '';
         document.getElementById('selectSavedLogs').value = '';
-
+        renderActivityEditBoxes();
         syncPreview();
       }
     }
-  
 
-    // 計算「雲端歷史累積 ＋ 當前編輯週」的總領域分佈
+    // 計算學期總分佈 (含當前編輯週)
     function calculateTotalStatistics() {
       const activeWeek = document.getElementById('formWeek').value.trim();
       const cumulativeCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
 
-      // 1. 先把雲端所有已存週次加總 (排除當前正在編輯的這週，避免重複計算)
       if (Array.isArray(cachedCloudLogs)) {
         cachedCloudLogs.forEach(row => {
           if (row['週次'] !== activeWeek) {
@@ -1040,26 +1113,20 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
         });
       }
 
-      // 2. 加上目前畫面上正在編輯的當週次數
       const domains = ['身', '認', '語', '社', '美', '情'];
       domains.forEach(d => {
         const total = cumulativeCounts[d] + (currentWeekCounts[d] || 0);
-        document.getElementById(`badge-${d}`).innerText = total; // 大數字顯示：學期總累計
+        document.getElementById(`badge-${d}`).innerText = total;
         document.getElementById(`sub-badge-${d}`).innerText = `當週: ${currentWeekCounts[d] || 0} | 累計: ${total}`;
       });
     }
 
-    // ==========================================
-    // ⏰ 背景定時自動存檔 (每 40 秒在背景跑一次)
-    // ==========================================
+    // 定時背景存檔 (40 秒)
     setInterval(() => {
-      saveWeeklyLogToCloud(true); // true 表示靜默存檔，完全不彈跳窗
+      saveWeeklyLogToCloud(true);
     }, 40000);
 
-    // ==========================================
-    // 讀取雲端試算表已存的歷史週誌
-    // ==========================================
-
+    // 載入雲端列表
     async function loadSavedLogsList() {
       const selectEl = document.getElementById('selectSavedLogs');
       selectEl.innerHTML = '<option value="">⏳ 讀取雲端清單中...</option>';
@@ -1082,20 +1149,19 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
 
         calculateTotalStatistics();
         renderDetailsList();
-        
       } catch (err) {
         selectEl.innerHTML = '<option value="">❌ 讀取清單失敗</option>';
         console.error(err);
       }
     }
 
-    // 點選歷史紀錄後，一鍵將所有欄位帶入編輯區
+    // 讀取歷史週誌
     function onSelectSavedLog(index) {
       if (index === '') return;
       const log = cachedCloudLogs[index];
       if (!log) return;
 
-      // 1. 還原表頭與基本資訊
+      document.getElementById('formSchoolName').value = log['幼兒園名稱'] || document.getElementById('formSchoolName').value;
       document.getElementById('formYear').value = log['學年度'] || '113';
       document.getElementById('formSemester').value = log['學期'] || '第一學期';
       document.getElementById('formClassLevel').value = log['年齡層'] || '大班';
@@ -1105,34 +1171,39 @@ const schoolName = document.getElementById('formSchoolName').value || '幼兒園
       document.getElementById('formTheme').value = log['主題'] || '';
       document.getElementById('formConcept').value = log['概念'] || '';
 
-      // 2. 還原活動內容
       document.getElementById('formAct1Content').value = log['活動一'] || '';
       document.getElementById('formAct2Content').value = log['活動二'] || '';
       document.getElementById('formAct3Content').value = log['活動三'] || '';
 
-      // 3. 還原活動指標
-      const findAndSetIndicator = (actKey, indicatorStr) => {
-        if (!indicatorStr) return;
-        const code = indicatorStr.split('\n')[0].trim();
-        const found = indicatorsDB.find(i => i.smallCode === code);
-        if (found) currentActivityIndicators[actKey] = found;
+      // 還原多指標
+      const deserializeIndicators = (str) => {
+        if (!str) return [{ indicator: null, photos: [] }];
+        const parts = str.split(';;');
+        const blocks = [];
+        parts.forEach(p => {
+          const code = p.split('\n')[0].trim();
+          const found = indicatorsDB.find(i => i.smallCode === code);
+          blocks.push({ indicator: found || null, photos: [] });
+        });
+        return blocks.length > 0 ? blocks : [{ indicator: null, photos: [] }];
       };
-      findAndSetIndicator('act1', log['活動一指標']);
-      findAndSetIndicator('act2', log['活動二指標']);
-      findAndSetIndicator('act3', log['活動三指標']);
 
-      // 4. 還原學習區、母語、省思
+      activityBlocks.act1 = deserializeIndicators(log['活動一指標']);
+      activityBlocks.act2 = deserializeIndicators(log['活動二指標']);
+      activityBlocks.act3 = deserializeIndicators(log['活動三指標']);
+
       document.getElementById('formLearningArea').value = log['學習區'] || '';
       document.getElementById('formMotherTongue').value = log['母語教學'] || '';
       document.getElementById('formReflection').value = log['教學省思'] || '';
 
-      // 5. 觸發畫面即時同步
+      renderActivityEditBoxes();
       syncPreview();
-      alert(`已載入【${log['週次']}】的週誌資料！您可以直接編輯，修改後按「儲存」即可覆蓋更新。`);
+      alert(`已載入【${log['週次']}】週誌！可直接編輯並儲存覆蓋。`);
     }
 
-    // 頁面開啟時自動拉取一次歷史清單
+    // 啟動初始化
     window.addEventListener('DOMContentLoaded', () => {
+      initDefaultSettings();
       loadSavedLogsList();
     });
   </script>
