@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>幼兒園 - 主題教學活動週誌系統</title>
+  <title>幼兒園 - 主題教學活動週誌與評量系統</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @page {
@@ -31,7 +31,7 @@
       td, th { border: 1.2px solid black !important; }
     }
 
-    /* 嚴格鎖定 B～H 欄比例 (對照官方格式) */
+    /* 嚴格鎖定 B～H 欄比例 */
     .official-table {
       table-layout: fixed;
       width: 100%;
@@ -87,358 +87,334 @@
       </button>
     </div>
   </header>
-<!-- 週誌模組容器 -->
-  <div id="sectionWeeklyLog">
-  <!-- ======================== 領域檢視區 (點擊過濾) ======================== -->
-  <section class="no-print max-w-5xl mx-auto mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-    <div class="flex items-center justify-between mb-2">
-      <div class="flex items-center gap-2">
-        <h2 class="text-sm font-bold text-slate-800">📊 當週六大領域指標即時分佈</h2>
-        <span class="text-xs text-slate-400">（點選下方領域卡片，可單獨切換查看該領域指標明細）</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <!-- 圖一需求：主要概念切換篩選下拉選單 -->
-        <div class="flex items-center gap-1 text-xs">
-          <span class="text-slate-500 font-medium">主要概念：</span>
-          <select id="selectConceptFilter" onchange="filterDetailsByConcept(this.value)" class="border border-indigo-300 rounded px-2 py-1 text-xs bg-indigo-50 font-bold text-indigo-900">
-            <option value="ALL">全部概念</option>
-            <option value="大富翁">1. 大富翁</option>
-            <option value="走吧～走吧～">2. 走吧～走吧～</option>
-            <option value="下一站">3. 下一站</option>
-            <option value="藝起走">4. 藝起走</option>
-          </select>
-        </div>
-        <button onclick="showDetailsByDomain('ALL')" class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600 hover:bg-slate-200 font-semibold">顯示全部領域</button>
-        <button onclick="toggleDetails()" id="toggleBtn" class="text-xs text-indigo-600 hover:underline font-semibold">收合/展開 ▲</button>
-      </div>
-    </div>
-
-    <!-- 6大領域卡片 (大字：學期總累計 / 小字：當週) -->
-    <div class="grid grid-cols-6 gap-2 text-center select-none">
-      <div onclick="showDetailsByDomain('身')" class="domain-card bg-red-50 border border-red-200 p-2 rounded-lg cursor-pointer hover:bg-red-100 transition">
-        <div class="text-[11px] text-red-600 font-bold truncate">身體動作與健康</div>
-        <div class="text-xl font-black text-red-700" id="badge-身">0</div>
-        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-身">當週: 0 | 累計: 0</div>
-      </div>
-      <div onclick="showDetailsByDomain('認')" class="domain-card bg-amber-50 border border-amber-200 p-2 rounded-lg cursor-pointer hover:bg-amber-100 transition">
-        <div class="text-[11px] text-amber-600 font-bold truncate">認知</div>
-        <div class="text-xl font-black text-amber-700" id="badge-認">0</div>
-        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-認">當週: 0 | 累計: 0</div>
-      </div>
-      <div onclick="showDetailsByDomain('語')" class="domain-card bg-blue-50 border border-blue-200 p-2 rounded-lg cursor-pointer hover:bg-blue-100 transition">
-        <div class="text-[11px] text-blue-600 font-bold truncate">語文</div>
-        <div class="text-xl font-black text-blue-700" id="badge-語">0</div>
-        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-語">當週: 0 | 累計: 0</div>
-      </div>
-      <div onclick="showDetailsByDomain('社')" class="domain-card bg-emerald-50 border border-emerald-200 p-2 rounded-lg cursor-pointer hover:bg-emerald-100 transition">
-        <div class="text-[11px] text-emerald-600 font-bold truncate">社會</div>
-        <div class="text-xl font-black text-emerald-700" id="badge-社">0</div>
-        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-社">當週: 0 | 累計: 0</div>
-      </div>
-      <div onclick="showDetailsByDomain('美')" class="domain-card bg-purple-50 border border-purple-200 p-2 rounded-lg cursor-pointer hover:bg-purple-100 transition">
-        <div class="text-[11px] text-purple-600 font-bold truncate">美感</div>
-        <div class="text-xl font-black text-purple-700" id="badge-美">0</div>
-        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-美">當週: 0 | 累計: 0</div>
-      </div>
-      <div onclick="showDetailsByDomain('情')" class="domain-card bg-pink-50 border border-pink-200 p-2 rounded-lg cursor-pointer hover:bg-pink-100 transition">
-        <div class="text-[11px] text-pink-600 font-bold truncate">情緒</div>
-        <div class="text-xl font-black text-pink-700" id="badge-情">0</div>
-        <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-情">當週: 0 | 累計: 0</div>
-      </div>
-    </div>
-
-    <!-- 詳細清單 (支援依週次/依領域排序) -->
-    <div id="detailsDrawer" class="mt-4 pt-3 border-t border-slate-200 text-xs bg-slate-50 p-3 rounded-lg">
-      <div class="font-bold text-slate-700 mb-2 flex flex-wrap items-center justify-between gap-2">
-        <span id="detailFilterTitle">已選擇的指標明細：</span>
-        <div class="flex items-center gap-1 text-xs">
-          <span class="text-slate-400 font-normal">排序方式：</span>
-          <button type="button" onclick="setDetailSort('week')" id="btnSortWeek" class="px-2 py-0.5 rounded bg-indigo-600 text-white font-bold">依週次 📅</button>
-          <button type="button" onclick="setDetailSort('domain')" id="btnSortDomain" class="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-medium hover:bg-slate-300">依領域 🎨</button>
-        </div>
-      </div>
-      <div id="selectedIndicatorsList" class="space-y-1.5 text-slate-700 font-mono"></div>
-    </div>
-  </section>
-
-  <!-- ======================== 週誌編輯區 ======================== -->
-  <section id="editDrawer" class="no-print max-w-5xl mx-auto mb-6 bg-white p-5 rounded-xl shadow-md border-2 border-indigo-200">
-    <div class="flex justify-between items-center mb-3 pb-2 border-b">
-      <h3 class="font-bold text-slate-800 text-sm md:text-base flex items-center gap-2">
-        <span>✏️ 週誌完整編輯區</span>
-        <span class="text-xs font-normal text-slate-500">（此處修改下方模板即時連動同步）</span>
-      </h3>
-      <!-- 歷史載入、新增與自動存檔狀態 -->
-      <div class="flex flex-wrap items-center gap-2">
-        <span id="cloudAutoSaveStatus" class="text-[11px] font-mono text-slate-400">☁️ 雲端狀態：就緒</span>
-        <button type="button" onclick="createNewBlankLog()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow-sm flex items-center gap-1">
-          ➕ 建立新週誌
-        </button>
-        <div class="flex items-center gap-1">
-          <select id="selectSavedLogs" onchange="onSelectSavedLog(this.value)" class="text-xs border border-emerald-400 bg-emerald-50 text-emerald-900 rounded p-1.5 font-medium">
-            <option value="">📂 選擇已存週誌載入編輯...</option>
-          </select>
-          <button type="button" onclick="loadSavedLogsList()" title="重新整理歷史清單" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold">🔄</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 表頭項目編輯 -->
-    <div class="grid grid-cols-2 md:grid-cols-7 gap-2 mb-4 text-xs">
-      <div class="md:col-span-2">
-        <label class="block font-bold mb-1 text-slate-600">幼兒園名稱：</label>
-        <input type="text" id="formSchoolName" value="新北市私立富雅幼兒園" oninput="handleSchoolNameChange(this.value)" class="w-full border p-1.5 rounded font-bold text-indigo-900" placeholder="例: 新北市私立富雅幼兒園">
-      </div>
-      <div>
-        <label class="block font-bold mb-1 text-slate-600">學年度：</label>
-        <input type="text" id="formYear" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded font-mono" placeholder="例: 113">
-      </div>
-      <div>
-        <label class="block font-bold mb-1 text-slate-600">學期：</label>
-        <input type="text" id="formSemester" value="第一學期" oninput="syncPreview()" class="w-full border p-1.5 rounded">
-      </div>
-      <div>
-        <label class="block font-bold mb-1 text-slate-600">年齡層/班級：</label>
-        <input type="text" id="formClassLevel" list="classLevelOptions" value="" onchange="handleClassLevelChange(this.value)" oninput="syncPreview()" placeholder="可選或自填" class="w-full border p-1.5 rounded">
-        <datalist id="classLevelOptions">
-          <option value="大班">
-          <option value="中班">
-          <option value="小班">
-          <option value="幼幼班">
-        </datalist>
-      </div>
-      <div>
-        <label class="block font-bold mb-1 text-slate-600">週次：</label>
-        <input type="text" id="formWeek" value="第  週" oninput="handleWeekInputChange(this.value)" class="w-full border p-1.5 rounded font-medium">
-      </div>
-      <div class="md:col-span-2">
-        <label class="block font-bold mb-1 text-slate-600">活動日期：</label>
-        <div class="flex gap-1 items-center">
-          <input type="date" id="dateStart" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
-          <span>~</span>
-          <input type="date" id="dateEnd" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
-          <input type="text" id="formDate" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded text-xs font-mono" placeholder="請選日期或自填">
-        </div>
-      </div>
-    </div>
-
-    <!-- 教師、主題、概念、資源 -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4 text-xs">
-      <div>
-        <label class="block font-bold mb-1 text-slate-600">教師：</label>
-        <input type="text" id="formTeacher" value="" oninput="syncPreview()" placeholder="請填寫教師姓名" class="w-full border p-1.5 rounded">
-      </div>
-      <div>
-        <label class="block font-bold mb-1 text-slate-600">主題名稱：</label>
-        <input type="text" id="formTheme" value="" oninput="syncPreview()" placeholder="請填寫主題名稱" class="w-full border p-1.5 rounded">
-      </div>
-      <div>
-        <label class="block font-bold mb-1 text-slate-600">主要概念：</label>
-        <input type="text" id="formConcept" value="" oninput="syncPreview()" placeholder="請填寫主要概念" class="w-full border p-1.5 rounded">
-      </div>
-      <div>
-        <label class="block font-bold mb-1 text-slate-600">教學資源：</label>
-        <input type="text" id="formResources" value="" oninput="syncPreview()" placeholder="白板、學習單..." class="w-full border p-1.5 rounded">
-      </div>
-    </div>
-
-    <!-- 三大活動編輯區 (支援多指標與獨立照片) -->
-    <div class="space-y-4 text-xs mb-4">
-      <!-- 活動一 -->
-      <div class="p-3 bg-slate-50 border rounded-lg">
-        <div class="flex justify-between items-center mb-1">
-          <input type="text" id="formAct1Title" value="【活動一:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
-          <button type="button" onclick="addActivityIndicator('act1')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
-            ＋ 新增指標項目
-          </button>
-        </div>
-        <textarea id="formAct1Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
-主要活動
-綜合活動</textarea>
-        <div id="formAct1IndicatorBoxes" class="space-y-2 mt-2"></div>
-      </div>
-
-      <!-- 活動二 -->
-      <div class="p-3 bg-slate-50 border rounded-lg">
-        <div class="flex justify-between items-center mb-1">
-          <input type="text" id="formAct2Title" value="【活動二:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
-          <button type="button" onclick="addActivityIndicator('act2')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
-            ＋ 新增指標項目
-          </button>
-        </div>
-        <textarea id="formAct2Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
-主要活動
-綜合活動</textarea>
-        <div id="formAct2IndicatorBoxes" class="space-y-2 mt-2"></div>
-      </div>
-
-      <!-- 活動三 -->
-      <div class="p-3 bg-slate-50 border rounded-lg">
-        <div class="flex justify-between items-center mb-1">
-          <input type="text" id="formAct3Title" value="【活動三:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
-          <button type="button" onclick="addActivityIndicator('act3')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
-            ＋ 新增指標項目
-          </button>
-        </div>
-        <textarea id="formAct3Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
-主要活動
-綜合活動</textarea>
-        <div id="formAct3IndicatorBoxes" class="space-y-2 mt-2"></div>
-      </div>
-    </div>
-
-    <!-- 學習區、母語、省思 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs mb-3">
-      <div>
-        <label class="block font-bold mb-1 text-slate-700">【學習區】：</label>
-        <textarea id="formLearningArea" rows="2" oninput="syncPreview()" class="w-full border p-2 rounded" placeholder="填寫學習區規劃..."></textarea>
-      </div>
-      <div>
-        <label class="block font-bold mb-1 text-slate-700">【母語教學】：</label>
-        <textarea id="formMotherTongue" rows="2" oninput="syncPreview()" class="w-full border p-2 rounded" placeholder="填寫母語歌詞或教學內容..."></textarea>
-      </div>
-      <div class="md:col-span-2">
-        <label class="block font-bold mb-1 text-slate-700">【教學省思】：</label>
-        <textarea id="formReflection" rows="3" oninput="syncPreview()" class="w-full border p-2 rounded" placeholder="填寫本週教學省思與觀察..."></textarea>
-      </div>
-    </div>
-  </section>
 
   <!-- =========================================================================
-       標準校園 A4 模板區
+       【模組一：主題教學活動週誌】
        ========================================================================= -->
-  <main class="print-page max-w-5xl mx-auto bg-white p-4 md:p-8 shadow-lg border border-slate-300 relative">
-    
-    <div class="no-print absolute top-2 left-2 px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded">
-      📄【週誌標準模板預覽】
-    </div>
+  <div id="sectionWeeklyLog">
+    <!-- 領域檢視區 (點擊過濾) -->
+    <section class="no-print max-w-5xl mx-auto mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <h2 class="text-sm font-bold text-slate-800">📊 當週六大領域指標即時分佈</h2>
+          <span class="text-xs text-slate-400">（點選下方領域卡片，可單獨切換查看該領域指標明細）</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- 主要概念切換篩選下拉選單 -->
+          <div class="flex items-center gap-1 text-xs">
+            <span class="text-slate-500 font-medium">主要概念：</span>
+            <select id="selectConceptFilter" onchange="filterDetailsByConcept(this.value)" class="border border-indigo-300 rounded px-2 py-1 text-xs bg-indigo-50 font-bold text-indigo-900">
+              <option value="ALL">全部概念</option>
+              <option value="大富翁">1. 大富翁</option>
+              <option value="走吧～走吧～">2. 走吧～走吧～</option>
+              <option value="下一站">3. 下一站</option>
+              <option value="藝起走">4. 藝起走</option>
+            </select>
+          </div>
+          <button onclick="showDetailsByDomain('ALL')" class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600 hover:bg-slate-200 font-semibold">顯示全部領域</button>
+          <button onclick="toggleDetails()" id="toggleBtn" class="text-xs text-indigo-600 hover:underline font-semibold">收合/展開 ▲</button>
+        </div>
+      </div>
 
-    <!-- 表頭 (支援園名即時同步) -->
-    <div class="text-center official-title mb-1.5">
-      <h2 class="text-lg md:text-xl font-bold tracking-wider" style="font-family: 'DFKai-SB', '標楷體';">
-        <span id="viewSchoolName">新北市私立富雅幼兒園</span><span id="viewYear">113</span>學年度<span id="viewSemester">第一學期</span>主題教學活動週誌【<span id="viewClassLevel">大班</span>】
-      </h2>
-    </div>
+      <!-- 6大領域卡片 (大字：學期總累計 / 小字：當週) -->
+      <div class="grid grid-cols-6 gap-2 text-center select-none">
+        <div onclick="showDetailsByDomain('身')" class="domain-card bg-red-50 border border-red-200 p-2 rounded-lg cursor-pointer hover:bg-red-100 transition">
+          <div class="text-[11px] text-red-600 font-bold truncate">身體動作與健康</div>
+          <div class="text-xl font-black text-red-700" id="badge-身">0</div>
+          <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-身">當週: 0 | 累計: 0</div>
+        </div>
+        <div onclick="showDetailsByDomain('認')" class="domain-card bg-amber-50 border border-amber-200 p-2 rounded-lg cursor-pointer hover:bg-amber-100 transition">
+          <div class="text-[11px] text-amber-600 font-bold truncate">認知</div>
+          <div class="text-xl font-black text-amber-700" id="badge-認">0</div>
+          <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-認">當週: 0 | 累計: 0</div>
+        </div>
+        <div onclick="showDetailsByDomain('語')" class="domain-card bg-blue-50 border border-blue-200 p-2 rounded-lg cursor-pointer hover:bg-blue-100 transition">
+          <div class="text-[11px] text-blue-600 font-bold truncate">語文</div>
+          <div class="text-xl font-black text-blue-700" id="badge-語">0</div>
+          <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-語">當週: 0 | 累計: 0</div>
+        </div>
+        <div onclick="showDetailsByDomain('社')" class="domain-card bg-emerald-50 border border-emerald-200 p-2 rounded-lg cursor-pointer hover:bg-emerald-100 transition">
+          <div class="text-[11px] text-emerald-600 font-bold truncate">社會</div>
+          <div class="text-xl font-black text-emerald-700" id="badge-社">0</div>
+          <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-社">當週: 0 | 累計: 0</div>
+        </div>
+        <div onclick="showDetailsByDomain('美')" class="domain-card bg-purple-50 border border-purple-200 p-2 rounded-lg cursor-pointer hover:bg-purple-100 transition">
+          <div class="text-[11px] text-purple-600 font-bold truncate">美感</div>
+          <div class="text-xl font-black text-purple-700" id="badge-美">0</div>
+          <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-美">當週: 0 | 累計: 0</div>
+        </div>
+        <div onclick="showDetailsByDomain('情')" class="domain-card bg-pink-50 border border-pink-200 p-2 rounded-lg cursor-pointer hover:bg-pink-100 transition">
+          <div class="text-[11px] text-pink-600 font-bold truncate">情緒</div>
+          <div class="text-xl font-black text-pink-700" id="badge-情">0</div>
+          <div class="text-[10px] text-slate-500 font-medium" id="sub-badge-情">當週: 0 | 累計: 0</div>
+        </div>
+      </div>
 
-    <!-- 正式表格：B~H 欄比例 -->
-    <table class="official-table">
-      <colgroup>
-        <col style="width: 8%;">  <!-- Col B: 週次 / 主題名稱 / 課程目標 / 教學資源 -->
-        <col style="width: 14%;"> <!-- Col C: 第一週 -->
-        <col style="width: 8%;">  <!-- Col D: 活動日期 -->
-        <col style="width: 24%;"> <!-- Col E: 113/08/12-113/08/16 -->
-        <col style="width: 11%;"> <!-- Col F: 教師 / 主要概念 -->
-        <col style="width: 15%;"> <!-- Col G: 教師姓名 / 概念名稱 -->
-        <col style="width: 20%;"> <!-- Col H: 【學習指標】 -->
-      </colgroup>
-      <tbody>
-        <!-- 列 1：週次、活動日期、教師 -->
-        <tr>
-          <td class="font-bold text-center">週次</td>
-          <td class="text-center" id="viewWeek">第一週</td>
-          <td class="font-bold text-center leading-tight">活動<br>日期</td>
-          <td class="text-center font-mono" id="viewDate"></td>
-          <td class="font-bold text-center">教師</td>
-          <td colspan="2" class="text-center" id="viewTeacher"></td>
-        </tr>
-        <!-- 列 2：主題名稱、主要概念 -->
-        <tr>
-          <td class="font-bold text-center leading-tight">主題<br>名稱</td>
-          <td colspan="3" class="text-center" id="viewTheme"></td>
-          <td class="font-bold text-center">主要概念</td>
-          <td colspan="2" class="text-center" id="viewConcept"></td>
-        </tr>
-        <!-- 列 3：課程目標 -->
-        <tr>
-          <td class="font-bold text-center leading-tight">課程<br>目標</td>
-          <td colspan="6" class="p-1.5 leading-normal" id="viewBigGoals"></td>
-        </tr>
-        <!-- 列 4：教學資源 -->
-        <tr>
-          <td class="font-bold text-center leading-tight">教學<br>資源</td>
-          <td colspan="6" id="viewResources"></td>
-        </tr>
+      <!-- 詳細清單 (支援依週次/依領域排序) -->
+      <div id="detailsDrawer" class="mt-4 pt-3 border-t border-slate-200 text-xs bg-slate-50 p-3 rounded-lg">
+        <div class="font-bold text-slate-700 mb-2 flex flex-wrap items-center justify-between gap-2">
+          <span id="detailFilterTitle">已選擇的指標明細：</span>
+          <div class="flex items-center gap-1 text-xs">
+            <span class="text-slate-400 font-normal">排序方式：</span>
+            <button type="button" onclick="setDetailSort('week')" id="btnSortWeek" class="px-2 py-0.5 rounded bg-indigo-600 text-white font-bold">依週次 📅</button>
+            <button type="button" onclick="setDetailSort('domain')" id="btnSortDomain" class="px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-medium hover:bg-slate-300">依領域 🎨</button>
+          </div>
+        </div>
+        <div id="selectedIndicatorsList" class="space-y-1.5 text-slate-700 font-mono"></div>
+      </div>
+    </section>
 
-        <!-- 列 5：活動設計 (B~G欄: 80%) 與 學習指標 (H欄: 20%) 標題 -->
-        <tr class="text-center font-bold">
-          <td colspan="6" class="py-1">活動設計</td>
-          <td class="py-1">學習指標</td>
-        </tr>
+    <!-- 週誌編輯區 -->
+    <section id="editDrawer" class="no-print max-w-5xl mx-auto mb-6 bg-white p-5 rounded-xl shadow-md border-2 border-indigo-200">
+      <div class="flex justify-between items-center mb-3 pb-2 border-b">
+        <h3 class="font-bold text-slate-800 text-sm md:text-base flex items-center gap-2">
+          <span>✏️ 週誌完整編輯區</span>
+          <span class="text-xs font-normal text-slate-500">（此處修改下方模板即時連動同步）</span>
+        </h3>
+        <!-- 歷史載入、新增與自動存檔狀態 -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span id="cloudAutoSaveStatus" class="text-[11px] font-mono text-slate-400">☁️ 雲端狀態：就緒</span>
+          <button type="button" onclick="createNewBlankLog()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow-sm flex items-center gap-1">
+            ➕ 建立新週誌
+          </button>
+          <div class="flex items-center gap-1">
+            <select id="selectSavedLogs" onchange="onSelectSavedLog(this.value)" class="text-xs border border-emerald-400 bg-emerald-50 text-emerald-900 rounded p-1.5 font-medium">
+              <option value="">📂 選擇已存週誌載入編輯...</option>
+            </select>
+            <button type="button" onclick="loadSavedLogsList()" title="重新整理歷史清單" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold">🔄</button>
+          </div>
+        </div>
+      </div>
 
+      <!-- 表頭項目編輯 -->
+      <div class="grid grid-cols-2 md:grid-cols-7 gap-2 mb-4 text-xs">
+        <div class="md:col-span-2">
+          <label class="block font-bold mb-1 text-slate-600">幼兒園名稱：</label>
+          <input type="text" id="formSchoolName" value="新北市私立富雅幼兒園" oninput="handleSchoolNameChange(this.value)" class="w-full border p-1.5 rounded font-bold text-indigo-900" placeholder="例: 新北市私立富雅幼兒園">
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600">學年度：</label>
+          <input type="text" id="formYear" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded font-mono" placeholder="例: 113">
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600">學期：</label>
+          <input type="text" id="formSemester" value="第一學期" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600">年齡層/班級：</label>
+          <input type="text" id="formClassLevel" list="classLevelOptions" value="" onchange="handleClassLevelChange(this.value)" oninput="syncPreview()" placeholder="可選或自填" class="w-full border p-1.5 rounded">
+          <datalist id="classLevelOptions">
+            <option value="大班">
+            <option value="中班">
+            <option value="小班">
+            <option value="幼幼班">
+          </datalist>
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600">週次：</label>
+          <input type="text" id="formWeek" value="第  週" oninput="handleWeekInputChange(this.value)" class="w-full border p-1.5 rounded font-medium">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block font-bold mb-1 text-slate-600">活動日期：</label>
+          <div class="flex gap-1 items-center">
+            <input type="date" id="dateStart" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
+            <span>~</span>
+            <input type="date" id="dateEnd" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
+            <input type="text" id="formDate" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded text-xs font-mono" placeholder="請選日期或自填">
+          </div>
+        </div>
+      </div>
+
+      <!-- 教師、主題、概念、資源 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4 text-xs">
+        <div>
+          <label class="block font-bold mb-1 text-slate-600">教師：</label>
+          <input type="text" id="formTeacher" value="" oninput="syncPreview()" placeholder="請填寫教師姓名" class="w-full border p-1.5 rounded">
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600">主題名稱：</label>
+          <input type="text" id="formTheme" value="" oninput="syncPreview()" placeholder="請填寫主題名稱" class="w-full border p-1.5 rounded">
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600">主要概念：</label>
+          <input type="text" id="formConcept" value="" oninput="syncPreview()" placeholder="請填寫主要概念" class="w-full border p-1.5 rounded">
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600">教學資源：</label>
+          <input type="text" id="formResources" value="" oninput="syncPreview()" placeholder="白板、學習單..." class="w-full border p-1.5 rounded">
+        </div>
+      </div>
+
+      <!-- 三大活動編輯區 (支援多指標與獨立照片) -->
+      <div class="space-y-4 text-xs mb-4">
         <!-- 活動一 -->
-        <tr>
-          <td colspan="6" class="align-top p-2 leading-relaxed">
-            <div class="font-bold mb-1" id="viewAct1Title">【活動一:  】</div>
-            <div id="viewAct1Content"></div>
-          </td>
-          <td class="align-top p-2 bg-white" id="viewAct1IndicatorCell"></td>
-        </tr>
+        <div class="p-3 bg-slate-50 border rounded-lg">
+          <div class="flex justify-between items-center mb-1">
+            <input type="text" id="formAct1Title" value="【活動一:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
+            <button type="button" onclick="addActivityIndicator('act1')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
+              ＋ 新增指標項目
+            </button>
+          </div>
+          <textarea id="formAct1Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
+主要活動
+綜合活動</textarea>
+          <div id="formAct1IndicatorBoxes" class="space-y-2 mt-2"></div>
+        </div>
 
         <!-- 活動二 -->
-        <tr>
-          <td colspan="6" class="align-top p-2 leading-relaxed">
-            <div class="font-bold mb-1" id="viewAct2Title">【活動二:  】</div>
-            <div id="viewAct2Content"></div>
-          </td>
-          <td class="align-top p-2 bg-white" id="viewAct2IndicatorCell"></td>
-        </tr>
+        <div class="p-3 bg-slate-50 border rounded-lg">
+          <div class="flex justify-between items-center mb-1">
+            <input type="text" id="formAct2Title" value="【活動二:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
+            <button type="button" onclick="addActivityIndicator('act2')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
+              ＋ 新增指標項目
+            </button>
+          </div>
+          <textarea id="formAct2Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
+主要活動
+綜合活動</textarea>
+          <div id="formAct2IndicatorBoxes" class="space-y-2 mt-2"></div>
+        </div>
 
         <!-- 活動三 -->
-        <tr>
-          <td colspan="6" class="align-top p-2 leading-relaxed">
-            <div class="font-bold mb-1" id="viewAct3Title">【活動三:  】</div>
-            <div id="viewAct3Content"></div>
-          </td>
-          <td class="align-top p-2 bg-white" id="viewAct3IndicatorCell"></td>
-        </tr>
+        <div class="p-3 bg-slate-50 border rounded-lg">
+          <div class="flex justify-between items-center mb-1">
+            <input type="text" id="formAct3Title" value="【活動三:  】" oninput="syncPreview()" class="font-bold bg-transparent border-0 text-slate-800 w-2/3">
+            <button type="button" onclick="addActivityIndicator('act3')" class="px-2 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-bold">
+              ＋ 新增指標項目
+            </button>
+          </div>
+          <textarea id="formAct3Content" rows="4" oninput="syncPreview()" class="w-full border p-2 rounded mb-2 font-mono text-xs">引起動機
+主要活動
+綜合活動</textarea>
+          <div id="formAct3IndicatorBoxes" class="space-y-2 mt-2"></div>
+        </div>
+      </div>
 
-        <!-- 學習區 (B~E欄) 與 母語教學 (F~H欄) -->
-        <tr>
-          <td colspan="4" class="p-2 font-bold align-top">
-            【學習區】
-            <div class="font-normal mt-1 whitespace-pre-line text-xs" id="viewLearningArea"></div>
-          </td>
-          <td colspan="3" class="p-2 font-bold align-top">
-            【母語教學】
-            <div class="font-normal mt-1 whitespace-pre-line text-xs" id="viewMotherTongue"></div>
-          </td>
-        </tr>
+      <!-- 學習區、母語、省思 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs mb-3">
+        <div>
+          <label class="block font-bold mb-1 text-slate-700">【學習區】：</label>
+          <textarea id="formLearningArea" rows="2" oninput="syncPreview()" class="w-full border p-2 rounded" placeholder="填寫學習區規劃..."></textarea>
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-700">【母語教學】：</label>
+          <textarea id="formMotherTongue" rows="2" oninput="syncPreview()" class="w-full border p-2 rounded" placeholder="填寫母語歌詞或教學內容..."></textarea>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block font-bold mb-1 text-slate-700">【教學省思】：</label>
+          <textarea id="formReflection" rows="3" oninput="syncPreview()" class="w-full border p-2 rounded" placeholder="填寫本週教學省思與觀察..."></textarea>
+        </div>
+      </div>
+    </section>
 
-        <!-- 教學省思 -->
-        <tr>
-          <td colspan="7" class="p-1 font-bold text-center">教學省思</td>
-        </tr>
-        <tr>
-          <td colspan="7" class="p-2 text-xs leading-normal" id="viewReflection"></td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- A4 週誌公文模板預覽 -->
+    <main class="print-page max-w-5xl mx-auto bg-white p-4 md:p-8 shadow-lg border border-slate-300 relative">
+      <div class="no-print absolute top-2 left-2 px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded">
+        📄【週誌標準模板預覽】
+      </div>
 
-    <!-- 底部審核簽章 -->
-    <div class="flex justify-between items-center text-xs md:text-sm font-bold mt-2 px-2" style="font-family: 'DFKai-SB', '標楷體';">
-      <div>園長：</div>
-      <div>主任：</div>
-      <div>紀錄：<span id="viewSignRecord"></span></div>
-    </div>
-  </main>
-</div> <!-- 結束 sectionWeeklyLog -->
-<!-- =========================================================================
-       【功能二：幼兒學習評量表模組】(全新升級版)
+      <div class="text-center official-title mb-1.5">
+        <h2 class="text-lg md:text-xl font-bold tracking-wider" style="font-family: 'DFKai-SB', '標楷體';">
+          <span id="viewSchoolName">新北市私立富雅幼兒園</span><span id="viewYear">113</span>學年度<span id="viewSemester">第一學期</span>主題教學活動週誌【<span id="viewClassLevel">大班</span>】
+        </h2>
+      </div>
+
+      <table class="official-table">
+        <colgroup>
+          <col style="width: 8%;">
+          <col style="width: 14%;">
+          <col style="width: 8%;">
+          <col style="width: 24%;">
+          <col style="width: 11%;">
+          <col style="width: 15%;">
+          <col style="width: 20%;">
+        </colgroup>
+        <tbody>
+          <tr>
+            <td class="font-bold text-center">週次</td>
+            <td class="text-center" id="viewWeek">第一週</td>
+            <td class="font-bold text-center leading-tight">活動<br>日期</td>
+            <td class="text-center font-mono" id="viewDate"></td>
+            <td class="font-bold text-center">教師</td>
+            <td colspan="2" class="text-center" id="viewTeacher"></td>
+          </tr>
+          <tr>
+            <td class="font-bold text-center leading-tight">主題<br>名稱</td>
+            <td colspan="3" class="text-center" id="viewTheme"></td>
+            <td class="font-bold text-center">主要概念</td>
+            <td colspan="2" class="text-center" id="viewConcept"></td>
+          </tr>
+          <tr>
+            <td class="font-bold text-center leading-tight">課程<br>目標</td>
+            <td colspan="6" class="p-1.5 leading-normal" id="viewBigGoals"></td>
+          </tr>
+          <tr>
+            <td class="font-bold text-center leading-tight">教學<br>資源</td>
+            <td colspan="6" id="viewResources"></td>
+          </tr>
+          <tr class="text-center font-bold">
+            <td colspan="6" class="py-1">活動設計</td>
+            <td class="py-1">學習指標</td>
+          </tr>
+          <tr>
+            <td colspan="6" class="align-top p-2 leading-relaxed">
+              <div class="font-bold mb-1" id="viewAct1Title">【活動一:  】</div>
+              <div id="viewAct1Content"></div>
+            </td>
+            <td class="align-top p-2 bg-white" id="viewAct1IndicatorCell"></td>
+          </tr>
+          <tr>
+            <td colspan="6" class="align-top p-2 leading-relaxed">
+              <div class="font-bold mb-1" id="viewAct2Title">【活動二:  】</div>
+              <div id="viewAct2Content"></div>
+            </td>
+            <td class="align-top p-2 bg-white" id="viewAct2IndicatorCell"></td>
+          </tr>
+          <tr>
+            <td colspan="6" class="align-top p-2 leading-relaxed">
+              <div class="font-bold mb-1" id="viewAct3Title">【活動三:  】</div>
+              <div id="viewAct3Content"></div>
+            </td>
+            <td class="align-top p-2 bg-white" id="viewAct3IndicatorCell"></td>
+          </tr>
+          <tr>
+            <td colspan="4" class="p-2 font-bold align-top">
+              【學習區】
+              <div class="font-normal mt-1 whitespace-pre-line text-xs" id="viewLearningArea"></div>
+            </td>
+            <td colspan="3" class="p-2 font-bold align-top">
+              【母語教學】
+              <div class="font-normal mt-1 whitespace-pre-line text-xs" id="viewMotherTongue"></div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="7" class="p-1 font-bold text-center">教學省思</td>
+          </tr>
+          <tr>
+            <td colspan="7" class="p-2 text-xs leading-normal" id="viewReflection"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="flex justify-between items-center text-xs md:text-sm font-bold mt-2 px-2" style="font-family: 'DFKai-SB', '標楷體';">
+        <div>園長：</div>
+        <div>主任：</div>
+        <div>紀錄：<span id="viewSignRecord"></span></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       【模組二：幼兒學習評量表】
        ========================================================================= -->
   <div id="sectionEvaluation" class="hidden">
-    
     <!-- 評量表操作與幼兒管理列 (no-print) -->
     <section class="no-print max-w-5xl mx-auto mb-6 bg-white p-5 rounded-xl shadow-md border-2 border-indigo-200">
-      
-      <!-- 幼兒選擇與內嵌新增列 (解決圖七不用彈窗) -->
       <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b">
         <div class="flex flex-wrap items-center gap-2">
           <span class="text-xs font-bold text-slate-700">👶 選擇評量幼兒：</span>
           <select id="selectStudent" onchange="loadStudentEval(this.value)" class="border-2 border-indigo-500 rounded p-1.5 text-xs font-bold bg-indigo-50 text-indigo-900">
-            <!-- JS 動態生成 -->
           </select>
-          
-          <!-- 圖七：內嵌直接輸入新增，不彈遮擋視窗 -->
           <div class="inline-flex items-center border border-slate-300 rounded px-2 py-1 bg-slate-50 gap-1">
             <input type="text" id="inlineNewStudentName" placeholder="輸入姓名新增" class="text-xs bg-transparent border-none outline-none w-24">
             <button type="button" onclick="addNewStudentInline()" class="px-2 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-bold">
@@ -448,7 +424,7 @@
         </div>
       </div>
 
-      <!-- 基本資料編輯 (自動連動週誌資料) -->
+      <!-- 基本資料編輯 -->
       <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5 text-xs mb-4">
         <div>
           <label class="block font-bold mb-1 text-slate-600">班級：</label>
@@ -473,18 +449,16 @@
         </div>
       </div>
 
-      <!-- 快速評分與評量項目編輯區 (支援圖十：折疊查看週誌已選指標) -->
+      <!-- 指標評量項目編輯與等第勾選 -->
       <div class="mb-4">
         <div class="flex justify-between items-center mb-2">
           <span class="font-bold text-xs text-slate-700">指標評量項目編輯與等第勾選：</span>
-          <span class="text-[11px] text-slate-400">💡 點擊「展開週誌參考」可直接挑選週誌已用指標帶入</span>
+          <span class="text-[11px] text-slate-400">💡 點擊「指標參考 ▼」可挑選週誌已用指標或課綱指標帶入</span>
         </div>
-        <div class="space-y-2 text-xs" id="evalRubricEditor">
-          <!-- JS 動態生成 12 項指標與折疊選擇器 -->
-        </div>
+        <div class="space-y-2 text-xs" id="evalRubricEditor"></div>
       </div>
 
-      <!-- 評語與文字編輯 (含 AI 語意輔助非遮擋小抽屜) -->
+      <!-- 評語與文字編輯 (含真實 AI 語意輔助) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
         <div>
           <div class="flex justify-between items-center mb-1">
@@ -494,13 +468,7 @@
             </button>
           </div>
           <textarea id="evalCurriculumIntro" rows="3" oninput="syncEvalPreview()" class="w-full border p-2 rounded" placeholder="填寫主題引言..."></textarea>
-          <!-- 非遮擋 AI 輔助推薦抽屜 -->
-          <div id="aiDrawer-intro" class="hidden mt-1 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-900 space-y-1">
-            <div class="font-bold text-purple-700">推薦潤飾範例 (點擊直接帶入)：</div>
-            <div onclick="applyAiText('intro', 1)" class="p-1.5 bg-white border rounded hover:bg-purple-100 cursor-pointer">
-              「這學期的主題課程我們透過社區探索引導幼生從自身經驗出發，逐步深入了解學校周遭環境。在老師的引導下，孩子們展現出主動探索的好奇心，也增進了對社區的認同與關懷意識。」
-            </div>
-          </div>
+          <div id="aiDrawer-intro" class="hidden mt-1 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-900 space-y-1"></div>
         </div>
 
         <div>
@@ -511,14 +479,10 @@
             </button>
           </div>
           <textarea id="evalTeacherComment" rows="3" oninput="syncEvalPreview()" class="w-full border p-2 rounded" placeholder="填寫老師的話..."></textarea>
-          <div id="aiDrawer-comment" class="hidden mt-1 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-900 space-y-1">
-            <div class="font-bold text-purple-700">AI 評語修飾推薦 (點擊帶入)：</div>
-            <div id="aiCommentSuggestions" class="space-y-1"></div>
-          </div>
+          <div id="aiDrawer-comment" class="hidden mt-1 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-900 space-y-1"></div>
         </div>
 
         <div>
-          <!-- 標題可編輯需求 -->
           <div class="flex gap-1 items-center mb-1">
             <input type="text" id="evalChildSayTitle" value="☆我學到...孩子說:" oninput="syncEvalPreview()" class="font-bold text-slate-700 border-b border-dashed border-slate-400 bg-transparent text-xs w-44">
             <span class="text-[10px] text-slate-400">(標題可改)</span>
@@ -533,16 +497,12 @@
       </div>
     </section>
 
-    <!-- =========================================================================
-         正式 A4 幼兒學習評量表 (嚴格單頁鎖定，對齊圖十一與圖十二)
-         ========================================================================= -->
+    <!-- 正式 A4 評量表 (嚴格圖七滿版規格) -->
     <main class="print-page max-w-5xl mx-auto bg-white p-4 md:p-6 shadow-lg border border-slate-300 relative" style="font-family: 'DFKai-SB', '標楷體';">
-      
       <div class="no-print absolute top-2 left-2 px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded">
         📄【評量表標準模板預覽】
       </div>
 
-      <!-- 表頭 (對齊圖十一) -->
       <div class="text-center mb-1">
         <h2 class="text-xl font-bold tracking-widest" id="viewEvalSchoolName">新北市私立富雅幼兒園</h2>
         <h3 class="text-base font-bold tracking-wider mt-0.5">
@@ -550,7 +510,7 @@
         </h3>
       </div>
 
-      <!-- 基本資料 (對齊圖十一) -->
+      <!-- 基本資料 -->
       <table class="official-table text-xs md:text-sm mb-0">
         <colgroup>
           <col style="width: 11%;">
@@ -578,15 +538,15 @@
         </tbody>
       </table>
 
-      <!-- 評量指標核心表格 (12項指標 ＋ 預設空白方框/勾選) -->
+      <!-- 12項領域指標表格 -->
       <table class="official-table text-xs mt-[-1.2px]">
         <colgroup>
-          <col style="width: 14%;"> <!-- 領域 -->
-          <col style="width: 58%;"> <!-- 評量項目 -->
-          <col style="width: 7%;">  <!-- 熟練 -->
-          <col style="width: 7%;">  <!-- 發展中 -->
-          <col style="width: 7%;">  <!-- 需協助 -->
-          <col style="width: 7%;">  <!-- 未發展 -->
+          <col style="width: 14%;">
+          <col style="width: 58%;">
+          <col style="width: 7%;">
+          <col style="width: 7%;">
+          <col style="width: 7%;">
+          <col style="width: 7%;">
         </colgroup>
         <thead>
           <tr class="text-center font-bold bg-slate-50">
@@ -601,33 +561,29 @@
             <th class="py-0.5">未發展</th>
           </tr>
         </thead>
-        <tbody id="viewEvalTableBody">
-          <!-- JS 動態生成 12 列 (對照圖十一) -->
-        </tbody>
+        <tbody id="viewEvalTableBody"></tbody>
       </table>
 
-      <!-- 底部引言、老師的話、家長的話與簽章 (高度 78mm 嚴格鎖定圖七 A4 滿版) -->
-      <table class="official-table text-xs mt-[-1.2px]" style="height: 78mm; min-height: 78mm;">
+      <!-- 底部引言、評語、家長的話與簽章 (高度 80mm 嚴格鎖定圖七 A4 滿版) -->
+      <table class="official-table text-xs mt-[-1.2px]" style="height: 80mm; min-height: 80mm;">
         <colgroup>
           <col style="width: 55%;">
           <col style="width: 45%;">
         </colgroup>
         <tbody>
-          <tr style="height: 66mm;">
+          <tr style="height: 68mm;">
             <td class="align-top p-2 leading-relaxed" style="vertical-align: top; overflow: hidden;">
               <div class="font-bold text-xs mb-1">老師的話：</div>
               <div class="whitespace-pre-line text-slate-800 text-[11px] leading-tight" id="viewEvalIntro"></div>
-              <div class="whitespace-pre-line font-medium text-slate-900 mt-1.5 leading-tight" id="viewEvalTeacherCommentContainer">
-                <span id="viewEvalTeacherComment"></span>
-              </div>
-              <div class="font-bold text-slate-900 mt-1.5 text-[11px]" id="viewEvalChildSay"></div>
+              <div class="whitespace-pre-line font-medium text-slate-900 mt-1 leading-tight" id="viewEvalTeacherComment"></div>
+              <div class="font-bold text-slate-900 mt-1 text-[11px]" id="viewEvalChildSay"></div>
             </td>
             <td class="align-top p-2" style="vertical-align: top;">
               <div class="font-bold mb-1">家長的話：</div>
               <div class="text-slate-700 min-h-[140px]" id="viewEvalParentComment"></div>
             </td>
           </tr>
-          <!-- 簽章欄：無中線、無底線、中間偏左均勻分布 (完全吻合圖七) -->
+          <!-- 簽章欄：無中線、無底線、中間偏左 (完全吻合圖四、圖七) -->
           <tr style="height: 12mm;">
             <td colspan="2" class="p-2 font-bold text-xs md:text-sm" style="border-top: 1.2px solid black; vertical-align: middle;">
               <div class="flex items-center justify-around w-full px-6">
@@ -639,8 +595,8 @@
         </tbody>
       </table>
     </main>
+  </div>
 
-  </div> <!-- 結束 sectionEvaluation -->
   <!-- ======================== 指標選擇器 Modal ======================== -->
   <div id="pickerModal" class="no-print fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-3">
     <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
@@ -731,7 +687,7 @@
       { age: '大班', domain: '情', bigCode: '情-4-1', bigName: '運用策略調節自己的情緒', smallCode: '情-大-4-1-1', smallName: '運用等待或改變想法的策略調節自己的情緒' }
     ];
 
-    // 2. 活動區塊資料模型 (支援每個活動 1~2 個指標，各自綁定照片)
+    // 全域變數
     let activityBlocks = {
       act1: [{ indicator: null, photos: [] }],
       act2: [{ indicator: null, photos: [] }],
@@ -744,15 +700,39 @@
     let cachedCloudLogs = [];
     let currentDetailSort = 'week';
     let currentDetailFilterDomain = 'ALL';
+    let currentConceptFilter = 'ALL';
 
     let currentModalAge = '大班';
     let currentModalDomain = 'ALL';
     let selectedBigCode = null;
 
+    const MAX_INDICATORS_PER_ACTIVITY = 5;
+
+    // 幼兒學習評量表 12 項標準項目 (預設空白，由老師自訂或挑選帶入)
+    let evalRubricItems = [
+      { id: 0, domain: "身體動作與健康", domainRowSpan: 2, item: "" },
+      { id: 1, domain: "身體動作與健康", domainRowSpan: 0, item: "" },
+      { id: 2, domain: "認知", domainRowSpan: 2, item: "" },
+      { id: 3, domain: "認知", domainRowSpan: 0, item: "" },
+      { id: 4, domain: "語文", domainRowSpan: 2, item: "" },
+      { id: 5, domain: "語文", domainRowSpan: 0, item: "" },
+      { id: 6, domain: "社會", domainRowSpan: 2, item: "" },
+      { id: 7, domain: "社會", domainRowSpan: 0, item: "" },
+      { id: 8, domain: "情緒", domainRowSpan: 2, item: "" },
+      { id: 9, domain: "情緒", domainRowSpan: 0, item: "" },
+      { id: 10, domain: "美感", domainRowSpan: 2, item: "" },
+      { id: 11, domain: "美感", domainRowSpan: 0, item: "" }
+    ];
+
+    let studentsEvalDB = {};
+    let currentStudentName = "";
+    let activeMainTab = "weekly";
+
     // 幼兒園名稱即時記憶
     function handleSchoolNameChange(val) {
       if (val) localStorage.setItem('fuya_saved_schoolName', val);
       syncPreview();
+      syncEvalPreview();
     }
 
     // 智慧段落格式化引擎
@@ -769,7 +749,7 @@
       }).join('');
     }
 
-    // 開啟指標挑選器 (指定活動與第幾項指標)
+    // 開啟指標挑選器
     function openPickerForBlock(actKey, index) {
       targetActKey = actKey;
       targetBlockIndex = index;
@@ -782,9 +762,6 @@
       document.getElementById('pickerModal').classList.add('hidden');
     }
 
-    // 系統設置：單一活動指標最大數量 (預留未來管理層設置介面調整)
-    const MAX_INDICATORS_PER_ACTIVITY = 5;
-
     function addActivityIndicator(actKey) {
       if (activityBlocks[actKey].length >= MAX_INDICATORS_PER_ACTIVITY) {
         alert(`單一活動最多支援 ${MAX_INDICATORS_PER_ACTIVITY} 組指標與對應照片組合！`);
@@ -795,20 +772,18 @@
       syncPreview();
     }
 
-    // 移除第 2 個指標
     function removeActivityIndicator(actKey, index) {
       activityBlocks[actKey].splice(index, 1);
       renderActivityEditBoxes();
       syncPreview();
     }
 
-    // 處理獨立上傳照片 (追加方式，不覆蓋舊照片)
     function handleBlockPhotoUpload(e, actKey, index) {
       const files = Array.from(e.target.files);
       const block = activityBlocks[actKey][index];
       
       files.forEach(file => {
-        if (block.photos.length >= 2) return; // 每個指標最多 2 張
+        if (block.photos.length >= 2) return;
         const reader = new FileReader();
         reader.onload = (event) => {
           block.photos.push(event.target.result);
@@ -820,14 +795,12 @@
       e.target.value = '';
     }
 
-    // 刪除單張照片
     function removeBlockPhoto(actKey, blockIdx, photoIdx) {
       activityBlocks[actKey][blockIdx].photos.splice(photoIdx, 1);
       renderActivityEditBoxes();
       syncPreview();
     }
 
-    // 渲染編輯區中的指標選擇按鈕與獨立照片縮圖
     function renderActivityEditBoxes() {
       ['act1', 'act2', 'act3'].forEach(actKey => {
         const container = document.getElementById(`form${actKey.charAt(0).toUpperCase() + actKey.slice(1)}IndicatorBoxes`);
@@ -849,7 +822,7 @@
             </div>
             <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
               <label class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border cursor-pointer text-[11px]">
-                📷 加入照片 
+                📷 加入照片
                 <input type="file" accept="image/*" multiple onchange="handleBlockPhotoUpload(event, '${actKey}', ${idx})" class="hidden">
               </label>
               <div class="flex gap-1.5" id="thumbs-${actKey}-${idx}"></div>
@@ -872,7 +845,6 @@
       });
     }
 
-    // Modal 年齡層與領域控制
     function changeAgeGroup(age) {
       currentModalAge = age;
       document.querySelectorAll('.age-tab').forEach(t => t.className = 'age-tab px-3 py-1 rounded bg-white text-slate-700 border');
@@ -896,7 +868,6 @@
       renderModalContent();
     }
 
-    // 兩層式指標渲染
     function renderModalContent() {
       const listEl = document.getElementById('modalIndicatorsList');
       const backContainer = document.getElementById('backToBigBtnContainer');
@@ -974,7 +945,6 @@
       }
     }
 
-    // 日期連動
     function autoFillDateRange() {
       const s = document.getElementById('dateStart').value;
       const e = document.getElementById('dateEnd').value;
@@ -988,13 +958,11 @@
       }
     }
 
-    // 週次輸入連動
     function handleWeekInputChange(weekVal) {
       document.getElementById('viewWeek').innerText = weekVal;
       syncPreview();
     }
 
-    // 領域篩選明細
     function showDetailsByDomain(domain) {
       currentDetailFilterDomain = domain;
       const titleEl = document.getElementById('detailFilterTitle');
@@ -1023,7 +991,6 @@
       document.getElementById('editDrawer').classList.toggle('hidden');
     }
 
-    // 排序控制
     function setDetailSort(mode) {
       currentDetailSort = mode;
       document.getElementById('btnSortWeek').className = mode === 'week' 
@@ -1035,7 +1002,11 @@
       renderDetailsList();
     }
 
-    // 渲染指標明細清單 (色彩徽章 + 排序 + 當前編輯週醒目標示)
+    function filterDetailsByConcept(conceptVal) {
+      currentConceptFilter = conceptVal;
+      renderDetailsList();
+    }
+
     function renderDetailsList() {
       const listEl = document.getElementById('selectedIndicatorsList');
       if (!listEl) return;
@@ -1052,42 +1023,43 @@
         '情': 'bg-pink-100 text-pink-800 border-pink-300'
       };
 
-      // 1. 抓取雲端歷史已存週次指標 (標記 isCurrent: false)
       if (Array.isArray(cachedCloudLogs)) {
         cachedCloudLogs.forEach(row => {
           if (row['週次'] !== activeWeek) {
-            ['活動一指標', '活動二指標', '活動三指標'].forEach(col => {
-              const val = row[col];
-              if (val) {
-                val.split(';;').forEach(part => {
-                  const code = part.split('\n')[0].trim();
-                  const ind = indicatorsDB.find(i => i.smallCode === code);
-                  if (ind) allItems.push({ week: row['週次'], isCurrent: false, ...ind });
-                });
-              }
-            });
+            if (currentConceptFilter === 'ALL' || row['概念'] === currentConceptFilter) {
+              ['活動一指標', '活動二指標', '活動三指標'].forEach(col => {
+                const val = row[col];
+                if (val) {
+                  val.split(';;').forEach(part => {
+                    const code = part.split('\n')[0].trim();
+                    const ind = indicatorsDB.find(i => i.smallCode === code);
+                    if (ind) allItems.push({ week: row['週次'], isCurrent: false, concept: row['概念'], ...ind });
+                  });
+                }
+              });
+            }
           }
         });
       }
 
-      // 2. 抓取當前編輯中週次指標 (標記 isCurrent: true)
-      Object.values(activityBlocks).forEach(blocks => {
-        blocks.forEach(b => {
-          if (b.indicator) allItems.push({ week: activeWeek, isCurrent: true, ...b.indicator });
+      const activeConcept = document.getElementById('formConcept').value.trim();
+      if (currentConceptFilter === 'ALL' || activeConcept === currentConceptFilter) {
+        Object.values(activityBlocks).forEach(blocks => {
+          blocks.forEach(b => {
+            if (b.indicator) allItems.push({ week: activeWeek, isCurrent: true, concept: activeConcept, ...b.indicator });
+          });
         });
-      });
+      }
 
-      // 3. 領域過濾
       let filtered = (currentDetailFilterDomain === 'ALL') 
         ? allItems 
         : allItems.filter(i => i.domain === currentDetailFilterDomain);
 
       if (filtered.length === 0) {
-        listEl.innerHTML = '<div class="text-slate-400 py-1">此領域尚無任何已選取的指標紀錄</div>';
+        listEl.innerHTML = '<div class="text-slate-400 py-1">此條件下尚無任何已選取的指標紀錄</div>';
         return;
       }
 
-      // 4. 排序機制
       const domainOrder = ['身', '認', '語', '社', '美', '情'];
       filtered.sort((a, b) => {
         if (currentDetailSort === 'domain') {
@@ -1097,13 +1069,11 @@
         }
       });
 
-      // 5. 渲染輸出 (當前編輯週加上專屬亮色背景與邊框)
       filtered.forEach(ind => {
         const div = document.createElement('div');
         const style = domainStyles[ind.domain] || 'bg-slate-100 text-slate-800 border-slate-300';
         
         if (ind.isCurrent) {
-          // 👉 當前正在編輯的項目：淡金黃底色、左側橘色粗條、陰影凸顯
           div.className = 'py-1.5 px-2 my-0.5 bg-amber-50/90 border-l-4 border-amber-500 rounded-r flex flex-wrap items-center gap-1.5 shadow-xs transition';
           div.innerHTML = `
             <span class="inline-block px-1.5 py-0.5 bg-amber-200 text-amber-900 border border-amber-300 rounded font-black text-[11px]">【${ind.week} ✏️當前】</span>
@@ -1112,7 +1082,6 @@
             <span class="text-slate-700 text-xs md:text-sm">　${ind.smallCode} ${ind.smallName}</span>
           `;
         } else {
-          // 👉 歷史雲端已存紀錄：標準灰色簡潔條目
           div.className = 'py-1 px-2 flex flex-wrap items-center gap-1.5 border-b border-slate-100 last:border-0';
           div.innerHTML = `
             <span class="inline-block px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded font-bold text-[11px]">【${ind.week}】</span>
@@ -1124,17 +1093,12 @@
         listEl.appendChild(div);
       });
     }
-    
-    // ==========================================
-    // 同步前台所有欄位 (重要核心)
-    // ==========================================
+
     function syncPreview() {
-      // 1. 幼兒園名稱即時強制同步
       const schoolName = document.getElementById('formSchoolName')?.value.trim() || '新北市私立富雅幼兒園';
       if (document.getElementById('headerSchoolName')) document.getElementById('headerSchoolName').innerText = schoolName;
       if (document.getElementById('viewSchoolName')) document.getElementById('viewSchoolName').innerText = schoolName;
 
-      // 2. 表頭基礎欄位同步
       document.getElementById('viewYear').innerText = document.getElementById('formYear').value;
       document.getElementById('viewSemester').innerText = document.getElementById('formSemester').value;
       document.getElementById('viewClassLevel').innerText = document.getElementById('formClassLevel').value;
@@ -1146,7 +1110,6 @@
       document.getElementById('viewResources').innerText = document.getElementById('formResources').value;
       document.getElementById('viewSignRecord').innerText = document.getElementById('formTeacher').value;
 
-      // 3. 活動內容與學習指標 (支援每活動多指標 + 獨立照片)
       ['act1', 'act2', 'act3'].forEach(act => {
         const cap = act.charAt(0).toUpperCase() + act.slice(1);
         document.getElementById(`view${cap}Title`).innerText = document.getElementById(`form${cap}Title`).value;
@@ -1161,7 +1124,6 @@
               blkEl.className = bIdx > 0 ? 'mt-2 pt-2 border-t border-slate-300' : '';
               blkEl.innerHTML = `<div class="font-bold text-xs leading-tight mb-1">${block.indicator.smallCode}<br>${block.indicator.smallName}</div>`;
 
-              // 照片排在該小指標正下方
               if (block.photos && block.photos.length > 0) {
                 const photoWrap = document.createElement('div');
                 photoWrap.className = 'grid grid-cols-1 gap-1 my-1';
@@ -1176,12 +1138,10 @@
         }
       });
 
-      // 4. 學習區、母語、省思
       document.getElementById('viewLearningArea').innerText = document.getElementById('formLearningArea').value;
       document.getElementById('viewMotherTongue').innerText = document.getElementById('formMotherTongue').value;
       document.getElementById('viewReflection').innerText = document.getElementById('formReflection').value;
 
-      // 5. 彙整所有指標 $\to$ 計算領域次數與表頭大指標
       const allActiveIndicators = [];
       Object.values(activityBlocks).forEach(blocks => {
         blocks.forEach(b => {
@@ -1209,13 +1169,11 @@
       renderDetailsList();
     }
 
-    // 班級記憶
     function handleClassLevelChange(val) {
       if (val) localStorage.setItem('fuya_saved_classLevel', val);
       syncPreview();
     }
 
-    // 初始化設定
     function initDefaultSettings() {
       const savedSchool = localStorage.getItem('fuya_saved_schoolName') || '新北市私立富雅幼兒園';
       document.getElementById('formSchoolName').value = savedSchool;
@@ -1236,9 +1194,9 @@
     }
 
     // ==========================================
-    // 雲端 GAS 串接設定
+    // 雲端 GAS 串接設定 (已配置正確網址)
     // ==========================================
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOYGf8d5zIIbzqT6xFU4NsXlYIJGVG65hs4ZsZLfQV5ZSumjUfzKL-P1L-OcXuYvqU/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxsW2djjgivz09jX652EaNDwOvx8n-xlxrclV3A5_ulO-MBe_oUazd_BaksovxUqgU/exec";
 
     function serializeActivityIndicators(actKey) {
       return activityBlocks[actKey]
@@ -1299,7 +1257,7 @@
           body: JSON.stringify(payload)
         });
 
-        const timeStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const timeStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
         if (statusEl) statusEl.innerText = `☁️ 已於 ${timeStr} 自動同步`;
 
         if (!isSilent) {
@@ -1317,7 +1275,6 @@
       }
     }
 
-    // ➕ 一鍵建立新週誌
     function createNewBlankLog() {
       if (confirm("確定要建立新週誌嗎？未儲存的內容將被清空。")) {
         document.getElementById('formWeek').value = '第  週';
@@ -1350,7 +1307,6 @@
       }
     }
 
-    // 計算學期總分佈 (含當前編輯週)
     function calculateTotalStatistics() {
       const activeWeek = document.getElementById('formWeek').value.trim();
       const cumulativeCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
@@ -1373,30 +1329,29 @@
       });
     }
 
-    // ⏰ 背景定時自動存檔 (依目前開啟的頁籤自動同步至對應試算表)
     setInterval(() => {
       if (activeMainTab === 'weekly') {
         saveWeeklyLogToCloud(true);
       } else if (activeMainTab === 'eval') {
         if (currentStudentName) {
-          saveCurrentModule(true); // 評量表背景靜默自動存檔
+          saveCurrentModule(true);
         }
       }
     }, 40000);
 
-    // 載入雲端列表
     async function loadSavedLogsList() {
       const selectEl = document.getElementById('selectSavedLogs');
       selectEl.innerHTML = '<option value="">⏳ 讀取雲端清單中...</option>';
       try {
         const res = await fetch(GAS_API_URL);
         const data = await res.json();
-        // 確保一定是陣列，避免 forEach 報錯
         cachedCloudLogs = Array.isArray(data) ? data : [];
         
         selectEl.innerHTML = '<option value="">📂 選擇已存週誌載入編輯...</option>';
         if (cachedCloudLogs.length === 0) {
           selectEl.innerHTML = '<option value="">（尚無任何已存週誌）</option>';
+          calculateTotalStatistics();
+          renderDetailsList();
           return;
         }
 
@@ -1415,7 +1370,6 @@
       }
     }
 
-    // 讀取歷史週誌
     function onSelectSavedLog(index) {
       if (index === '') return;
       const log = cachedCloudLogs[index];
@@ -1435,7 +1389,6 @@
       document.getElementById('formAct2Content').value = log['活動二'] || '';
       document.getElementById('formAct3Content').value = log['活動三'] || '';
 
-      // 還原多指標
       const deserializeIndicators = (str) => {
         if (!str) return [{ indicator: null, photos: [] }];
         const parts = str.split(';;');
@@ -1461,39 +1414,9 @@
       alert(`已載入【${log['週次']}】週誌！可直接編輯並儲存覆蓋。`);
     }
 
-    // 啟動初始化
-    window.addEventListener('DOMContentLoaded', () => {
-      initDefaultSettings();
-      loadSavedLogsList();
-    });
-
     // =========================================================================
-    // 幼兒學習評量表核心邏輯 (支援圖十指標折疊、AI建議、自訂項目與單頁字體縮放)
+    // 幼兒學習評量表核心邏輯
     // =========================================================================
-    
-    // 6 大領域 12 項標準項目 (文字可編輯)
-    let evalRubricItems = [
-      { id: 0, domain: "身體動作與健康", domainRowSpan: 2, item: "1. 到外戶進行探索，幼兒能覺察與辨別危險，保護自己及他人的安全" },
-      { id: 1, domain: "身體動作與健康", domainRowSpan: 0, item: "2. 在建構山佳地圖活動中，透過kapla、組合建構，能敏捷使用各種素材、工具或器材進行搭建" },
-      { id: 2, domain: "認知", domainRowSpan: 2, item: "1. 在『山佳地圖』活動中，能以圖像或符合紀錄生活物件的多項訊息" },
-      { id: 3, domain: "認知", domainRowSpan: 0, item: "2. 在『留下腳印(二)』活動中，能與同伴討論解決問題的方法，並與他人合作實際執行" },
-      { id: 4, domain: "語文", domainRowSpan: 2, item: "1. 在『學校的故事』活動中，能理解團體互動中輪流說話的規則" },
-      { id: 5, domain: "語文", domainRowSpan: 0, item: "2. 在邀請Mommy分享活動中，幼兒能合宜詮釋互動對象的表情和肢體動作" },
-      { id: 6, domain: "社會", domainRowSpan: 2, item: "1. 在『我的鄰居（一）』活動中，能探索社區中的人事物、活動、場所及其與自己的關係" },
-      { id: 7, domain: "社會", domainRowSpan: 0, item: "2. 在『圖書館』活動中，能因應情境，表現合宜的生活禮儀" },
-      { id: 8, domain: "情緒", domainRowSpan: 2, item: "1. 在『小市場』活動中，能以符合社會文化的方式來表達自己的情緒" },
-      { id: 9, domain: "情緒", domainRowSpan: 0, item: "2. 在『趴趴GO』活動中，能運用等待或改變想法的策略調解自己的情緒" },
-      { id: 10, domain: "美感", domainRowSpan: 2, item: "1. 進行信件創作，能運用各種視覺藝術素材與工具的特性。" },
-      { id: 11, domain: "美感", domainRowSpan: 0, item: "2. 使用大自然的鬆散素材，玩索各種藝術媒介，發揮想像並享受自我表現的樂趣" }
-    ];
-
-    // 幼兒資料庫
-    // 預設空白幼兒評量資料庫 (解決圖一：由老師自行新增名單)
-    let studentsEvalDB = {};
-    let currentStudentName = "";
-    let activeMainTab = "weekly";
-
-    // 主分頁切換
     function switchMainTab(tabKey) {
       activeMainTab = tabKey;
       const secWeekly = document.getElementById('sectionWeeklyLog');
@@ -1515,17 +1438,13 @@
       }
     }
 
-    // 初始化評量表
     function initEvaluationModule() {
-      // 1. 自動連動週誌資料
       document.getElementById('evalActivityName').value = document.getElementById('formTheme').value || '小腳ㄚ逛社區';
       document.getElementById('evalTeachers').value = document.getElementById('formTeacher').value || '李晏婷、陳聖勳';
 
-      // 2. 評量日期記憶還原
       const savedPeriod = localStorage.getItem('fuya_eval_saved_period') || '113/08/12～113/10/31';
       document.getElementById('evalPeriod').value = savedPeriod;
 
-      // 3. 渲染幼兒清單下拉選單
       renderStudentDropdown();
       loadStudentEval(currentStudentName);
     }
@@ -1533,7 +1452,12 @@
     function renderStudentDropdown() {
       const select = document.getElementById('selectStudent');
       select.innerHTML = '';
-      Object.keys(studentsEvalDB).forEach(name => {
+      const names = Object.keys(studentsEvalDB);
+      if (names.length === 0) {
+        select.innerHTML = '<option value="">（尚未新增幼兒）</option>';
+        return;
+      }
+      names.forEach(name => {
         const opt = document.createElement('option');
         opt.value = name;
         opt.innerText = name;
@@ -1542,7 +1466,6 @@
       select.value = currentStudentName;
     }
 
-    // 內嵌新增幼兒 (解決圖七不用遮擋彈窗)
     function addNewStudentInline() {
       const input = document.getElementById('inlineNewStudentName');
       const name = input.value.trim();
@@ -1550,8 +1473,8 @@
 
       if (!studentsEvalDB[name]) {
         studentsEvalDB[name] = {
-          levels: Array(12).fill("熟練"),
-          comment: `${name}在這次的活動中表現良好，能積極參與並與同儕良好互動。`,
+          levels: Array(12).fill(""),
+          comment: "",
           childSayTitle: "☆我學到...孩子說:",
           childSayContent: "",
           parentComment: ""
@@ -1565,7 +1488,6 @@
       }
     }
 
-    // 評量期間自動記憶
     function saveAndSyncEvalPeriod(val) {
       if (val) localStorage.setItem('fuya_eval_saved_period', val);
       syncEvalPreview();
@@ -1582,7 +1504,6 @@
       }
     }
 
-    // 載入幼兒評量資料
     function loadStudentEval(name) {
       currentStudentName = name;
       const data = studentsEvalDB[name] || {
@@ -1602,13 +1523,11 @@
       syncEvalPreview();
     }
 
-   // 圖五需求：清楚區分「週誌曾用過」與「課綱指標庫」
     function getUsedWeeklyIndicatorsByDomain(domainKeyword) {
       const shortDomain = domainKeyword.charAt(0);
       const usedInWeekly = [];
       const standardList = [];
 
-      // 1. 抓取週誌中該領域曾使用過的紀錄 (帶出週次)
       if (Array.isArray(cachedCloudLogs)) {
         cachedCloudLogs.forEach(row => {
           ['活動一指標', '活動二指標', '活動三指標'].forEach(col => {
@@ -1623,7 +1542,6 @@
         });
       }
 
-      // 2. 課綱標準指標庫
       indicatorsDB.filter(i => i.domain === shortDomain).forEach(i => {
         standardList.push({ week: '課綱庫', text: `${i.smallCode} ${i.smallName}` });
       });
@@ -1631,7 +1549,6 @@
       return { usedInWeekly, standardList };
     }
 
-    // 渲染評量項目與圖十折疊參考
     function renderEvalRubricEditor(levels) {
       const container = document.getElementById('evalRubricEditor');
       container.innerHTML = '';
@@ -1642,7 +1559,6 @@
         const row = document.createElement('div');
         row.className = 'p-2.5 bg-slate-50 border rounded-lg space-y-1.5';
 
-        // 該領域在週誌中用過的指標清單 (圖十需求)
         const { usedInWeekly, standardList } = getUsedWeeklyIndicatorsByDomain(rubric.domain);
         let refListHtml = '';
 
@@ -1665,14 +1581,6 @@
               <span class="text-indigo-600 font-bold whitespace-nowrap ml-1">帶入 ➔</span>
             </div>`;
         });
-        const refListHtml = usedIndicators.length > 0 
-          ? usedIndicators.map(ind => `
-              <div onclick="applyIndicatorToRubric(${idx}, '${ind.replace(/'/g, "\\'")}')" class="p-1 bg-white border border-indigo-200 rounded text-[11px] text-indigo-800 hover:bg-indigo-100 cursor-pointer flex items-center justify-between">
-                <span>${ind}</span>
-                <span class="text-indigo-600 font-bold">帶入 ➔</span>
-              </div>
-            `).join('')
-          : '<div class="text-[11px] text-slate-400">週誌中暫無此領域的使用紀錄</div>';
 
         row.innerHTML = `
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -1687,18 +1595,16 @@
             </div>
           </div>
 
-          <!-- 項目文字輸入框 (可自由修改) -->
           <div class="flex items-center gap-1">
-            <input type="text" value="${rubric.item}" oninput="updateRubricItemText(${idx}, this.value)" class="w-full border p-1 rounded text-xs bg-white text-slate-800 font-medium">
+            <input type="text" value="${rubric.item}" oninput="updateRubricItemText(${idx}, this.value)" class="w-full border p-1 rounded text-xs bg-white text-slate-800 font-medium" placeholder="請點選參考指標或自行輸入項目內容...">
             <button type="button" onclick="toggleIndicatorRef(${idx})" class="px-2 py-1 bg-indigo-50 border border-indigo-300 text-indigo-700 rounded text-[11px] font-bold whitespace-nowrap hover:bg-indigo-100">
               指標參考 ▼
             </button>
           </div>
 
-          <!-- 圖十：可折疊指標抽屜 (不佔空間) -->
           <div id="indRefDrawer-${idx}" class="hidden p-2 bg-indigo-50/70 border border-indigo-200 rounded space-y-1 mt-1">
-            <div class="font-bold text-[11px] text-indigo-900">週誌中已使用的【${rubric.domain}】指標 (點擊直接帶入編寫)：</div>
-            <div class="space-y-1 max-h-28 overflow-y-auto">${refListHtml}</div>
+            <div class="font-bold text-[11px] text-indigo-900">指標挑選參考 (點擊直接帶入編寫)：</div>
+            <div class="space-y-1 max-h-36 overflow-y-auto">${refListHtml}</div>
           </div>
         `;
         container.appendChild(row);
@@ -1729,7 +1635,7 @@
       syncEvalPreview();
     }
 
-    // ✨ 真實 AI 深度語意潤飾引擎：真正解析您輸入的草稿文字、孩子姓名與強項領域進行改寫重組
+    // ✨ 深度 AI 語意編寫輔助
     function toggleAiAssistant(type) {
       const drawer = document.getElementById(`aiDrawer-${type}`);
       drawer.classList.toggle('hidden');
@@ -1737,8 +1643,6 @@
       if (type === 'intro') {
         const theme = document.getElementById('evalActivityName').value.trim() || '主題課程';
         const userDraft = document.getElementById('evalCurriculumIntro').value.trim();
-        // 抓出前台目前有填寫的領域項目內容
-        const activeItems = evalRubricItems.map(r => r.item).filter(t => t.length > 5).slice(0, 3).join('；');
 
         drawer.innerHTML = `
           <div class="font-bold text-purple-700 mb-1">✨ AI 統整活動「${theme}」與您輸入的引言給出潤飾建議：</div>
@@ -1756,9 +1660,6 @@
       } else if (type === 'comment') {
         const name = currentStudentName || '幼生';
         const userDraft = document.getElementById('evalTeacherComment').value.trim();
-        const box = document.getElementById('aiCommentSuggestions');
-
-        // 分析草稿核心語意
         let coreSnippet = userDraft 
           ? userDraft.replace(new RegExp(name, 'g'), '').replace(/^[，,、\s]+/, '')
           : "在活動中表現認真，能逐步適應團體節奏並與他人互動。";
@@ -1806,36 +1707,7 @@
       syncEvalPreview();
     }
 
-    function applyAiSynthesizedIntro(opt, kw) {
-      const theme = document.getElementById('evalActivityName').value.trim() || '主題課程';
-      let text = opt === 1
-        ? `本學期主題圍繞『${theme}』展開，我們帶領幼生走出教室融入${kw}。在真實情境中，孩子們透過五官感知環境的變化，不僅培養了敏銳的觀察力，更在團隊合作中建立起關愛環境與主動探究的精神。`
-        : `這學期我們以『${theme}』為核心，引導孩子從生活經驗出發探索${kw}的美好。在老師的陪伴引導下，幼生們從被動聆聽轉變為自發性探索，逐步深化對周遭人事物的連結與認同感。`;
-      document.getElementById('evalCurriculumIntro').value = text;
-      document.getElementById('aiDrawer-intro').classList.add('hidden');
-      syncEvalPreview();
-    }
-
-    function applyAiSynthesizedComment(opt, kw) {
-      const name = currentStudentName || '幼生';
-      let text = opt === 1
-        ? `${name}是個心思細膩的孩子！在本次活動中，孩子提到『${kw}』展現了其獨到的觀察眼光。在團體互動時能熱情投入，面對新挑戰也能展現韌性，進步令人欣喜！`
-        : `看見${name}在活動中分享『${kw}』，充分展現了孩子豐富的想像力與敏銳度。在與同儕協作時懂得傾聽與合作，是位讓人安心的小幫手，期待未來持續綻放自信！`;
-      document.getElementById('evalTeacherComment').value = text;
-      document.getElementById('aiDrawer-comment').classList.add('hidden');
-      syncEvalPreview();
-    }
-
-    // 圖一：依主要概念切換篩選指標明細
-    let currentConceptFilter = 'ALL';
-    function filterDetailsByConcept(conceptVal) {
-      currentConceptFilter = conceptVal;
-      renderDetailsList();
-    }
-
-    // 同步 A4 評量表表格預覽 (含字體自適應縮小，確保單頁列印圖十一)
     function syncEvalPreview() {
-      // 1. 同步表頭
       const school = document.getElementById('formSchoolName')?.value || '新北市私立富雅幼兒園';
       const year = document.getElementById('formYear')?.value || '113';
       const semester = document.getElementById('formSemester')?.value || '第一學期';
@@ -1852,7 +1724,6 @@
       document.getElementById('viewEvalStudentName').innerText = currentStudentName;
       document.getElementById('viewEvalPeriod').innerText = document.getElementById('evalPeriod').value;
 
-      // 2. 渲染核心 12 項表格 (吻合圖十一格式)
       const tbody = document.getElementById('viewEvalTableBody');
       tbody.innerHTML = '';
       const grades = ["熟練", "發展中", "需協助", "未發展"];
@@ -1867,7 +1738,6 @@
           domainTd = `<td rowspan="${rubric.domainRowSpan}" class="font-bold text-center align-middle bg-slate-50">${rubric.domain}</td>`;
         }
 
-        // 對齊圖十一：若勾選顯示 V，未勾選顯示空方框 □
         const checksTds = grades.map(g => {
           const isChecked = (userLevel === g);
           return `<td class="text-center font-bold text-sm ${isChecked ? 'text-blue-700 font-mono text-base' : 'text-slate-300'}">${isChecked ? 'V' : '□'}</td>`;
@@ -1881,7 +1751,6 @@
         tbody.appendChild(tr);
       });
 
-      // 3. 同步文字與彈性縮減字體 (防止超出單頁 A4，對齊圖五)
       const introText = document.getElementById('evalCurriculumIntro').value;
       const commentText = document.getElementById('evalTeacherComment').value;
       const totalChars = introText.length + commentText.length;
@@ -1892,7 +1761,6 @@
       introEl.innerText = introText;
       commentEl.innerText = commentText;
 
-      // 當引言＋評語字數多時，自動彈性縮小字體與行距
       if (totalChars > 220) {
         introEl.style.fontSize = '9px';
         introEl.style.lineHeight = '1.2';
@@ -1916,11 +1784,9 @@
       document.getElementById('viewEvalParentComment').innerText = document.getElementById('evalParentComment').value;
     }
 
-    // ==========================================
-    // 全域儲存分流函式 (解決 saveCurrentModule is not defined)
-    // ==========================================
+    // 全域儲存分流函式 (支援背景自動存檔)
     async function saveCurrentModule(isSilent = false) {
-        window.saveCurrentModule = saveCurrentModule;
+      if (activeMainTab === 'weekly') {
         saveWeeklyLogToCloud(isSilent);
         return;
       }
@@ -1981,7 +1847,13 @@
           btn.innerText = "💾 儲存至雲端";
         }
       }
-    };
+    }
+
+    // 啟動初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      initDefaultSettings();
+      loadSavedLogsList();
+    });
   </script>
 </body>
 </html>
