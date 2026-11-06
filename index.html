@@ -186,7 +186,7 @@
         </div>
       </div>
 
-      <!-- 表頭項目編輯 (整齊兩列，文字絕不被擠壓換行) -->
+      <!-- 表頭項目編輯 (完全符合圖五、圖六：標準兩排，整齊不換行) -->
       <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-3 text-xs">
         <div class="md:col-span-2">
           <label class="block font-bold mb-1 text-slate-600">幼兒園名稱：</label>
@@ -220,22 +220,22 @@
             <input type="date" id="dateStart" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
             <span>~</span>
             <input type="date" id="dateEnd" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
-            <input type="text" id="formDate" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded text-xs font-mono" placeholder="例: 113/08/12-113/08/16">
+            <input type="hidden" id="formDate" value="">
           </div>
         </div>
         <div>
           <label class="block font-bold mb-1 text-slate-600">教師：</label>
-          <input type="text" id="formTeacher" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+          <input type="text" id="formTeacher" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded" placeholder="教師姓名">
         </div>
         <div>
           <label class="block font-bold mb-1 text-slate-600">主題名稱：</label>
-          <input type="text" id="formTheme" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+          <input type="text" id="formTheme" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded" placeholder="主題名稱">
         </div>
         <div>
           <label class="block font-bold mb-1 text-slate-600">主要概念：</label>
-          <input type="text" id="formConcept" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded">
+          <input type="text" id="formConcept" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded" placeholder="主要概念">
         </div>
-            <div>
+        <div>
           <label class="block font-bold mb-1 text-slate-600">教學資源：</label>
           <input type="text" id="formResources" value="" oninput="syncPreview()" placeholder="白板、學習單..." class="w-full border p-1.5 rounded">
         </div>
@@ -492,7 +492,7 @@
       </div>
     </section>
 
-    <!-- 正式 A4 評量表 (完全對齊圖五規格：滿版 88mm + 獨立簽章格) -->
+    <!-- 正式 A4 評量表 (單一表格格線完全貫通，滿版對齊圖八，無多餘橫線) -->
     <main class="print-page max-w-5xl mx-auto bg-white p-4 md:p-6 shadow-lg border border-slate-300 relative" style="font-family: 'DFKai-SB', '標楷體';">
       <div class="no-print absolute top-2 left-2 px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded">
         📄【評量表標準模板預覽】
@@ -505,45 +505,31 @@
         </h3>
       </div>
 
-      <!-- 基本資料 -->
-      <table class="official-table text-xs md:text-sm mb-0">
+      <!-- 單一連貫表格：保證從表頭到表尾垂直格線 100% 筆直對齊 -->
+      <table class="official-table text-xs md:text-sm">
         <colgroup>
-          <col style="width: 11%;">
-          <col style="width: 22%;">
-          <col style="width: 12%;">
-          <col style="width: 21%;">
-          <col style="width: 11%;">
-          <col style="width: 23%;">
-        </colgroup>
-        <tbody>
-          <tr>
-            <td class="font-bold text-center">班　級：</td>
-            <td id="viewEvalClass"></td>
-            <td class="font-bold text-center">活動名稱：</td>
-            <td id="viewEvalActivity"></td>
-            <td class="font-bold text-center">教　師：</td>
-            <td id="viewEvalTeachers"></td>
-          </tr>
-          <tr>
-            <td class="font-bold text-center">幼兒姓名：</td>
-            <td class="font-bold text-base" id="viewEvalStudentName"></td>
-            <td class="font-bold text-center">評量期間：</td>
-            <td colspan="3" class="font-mono" id="viewEvalPeriod"></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- 12項領域指標表格 -->
-      <table class="official-table text-xs mt-[-1.2px]">
-        <colgroup>
-          <col style="width: 14%;"> <!-- 領域 -->
-          <col style="width: 58%;"> <!-- 評量項目 -->
+          <col style="width: 14%;"> <!-- Col 1: 領域 / 班級 / 幼兒姓名 / 老師的話 -->
+          <col style="width: 58%;"> <!-- Col 2: 評量項目 / 內容 -->
           <col style="width: 7%;">  <!-- 熟練 -->
           <col style="width: 7%;">  <!-- 發展中 -->
           <col style="width: 7%;">  <!-- 需協助 -->
           <col style="width: 7%;">  <!-- 未發展 -->
         </colgroup>
-        <thead>
+        <tbody>
+          <!-- 表頭資訊 (垂直線與領域欄完美切齊) -->
+          <tr>
+            <td class="font-bold text-center">班　級：</td>
+            <td id="viewEvalClass"></td>
+            <td colspan="2" class="font-bold text-center">活動名稱：</td>
+            <td colspan="2" id="viewEvalActivity"></td>
+          </tr>
+          <tr>
+            <td class="font-bold text-center">幼兒姓名：</td>
+            <td class="font-bold text-base" id="viewEvalStudentName"></td>
+            <td colspan="2" class="font-bold text-center">評量期間：</td>
+            <td colspan="2" class="font-mono text-xs" id="viewEvalPeriod"></td>
+          </tr>
+          <!-- 評量指標欄頭 -->
           <tr class="text-center font-bold bg-slate-50">
             <th rowspan="2">領域</th>
             <th rowspan="2">評量項目</th>
@@ -555,36 +541,28 @@
             <th class="py-0.5">需協助</th>
             <th class="py-0.5">未發展</th>
           </tr>
-        </thead>
+        </tbody>
         <tbody id="viewEvalTableBody"></tbody>
-      </table>
-
-      <!-- 底部引言、評語、家長的話與簽章 (完全對齊圖六、八：A4滿版，簽章上方無橫線) -->
-      <table class="official-table text-xs mt-[-1.2px]" style="height: 88mm; min-height: 88mm;">
-        <colgroup>
-          <col style="width: 50%;">
-          <col style="width: 50%;">
-        </colgroup>
+        <!-- 底部引言、評語與簽章 (高度88mm撐滿A4，簽章列無多餘橫線) -->
         <tbody>
-          <!-- 內容區 -->
           <tr style="height: 74mm;">
-            <td class="align-top p-2 leading-relaxed" style="vertical-align: top; width: 50%; overflow: hidden;">
+            <td colspan="2" class="align-top p-2 leading-relaxed" style="vertical-align: top; overflow: hidden;">
               <div class="font-bold text-xs mb-1">老師的話：</div>
               <div class="whitespace-pre-line text-slate-800 text-[11px] leading-tight" id="viewEvalIntro"></div>
               <div class="whitespace-pre-line font-medium text-slate-900 mt-1 leading-tight" id="viewEvalTeacherComment"></div>
               <div class="font-bold text-slate-900 mt-1 text-[11px]" id="viewEvalChildSay"></div>
             </td>
-            <td class="align-top p-2" style="vertical-align: top; width: 50%;">
+            <td colspan="4" class="align-top p-2" style="vertical-align: top;">
               <div class="font-bold text-xs mb-1">家長的話：</div>
               <div class="text-slate-700 min-h-[140px]" id="viewEvalParentComment"></div>
             </td>
           </tr>
-          <!-- 簽章區 (無橫線分隔，乾淨置底對齊圖六、八) -->
+          <!-- 簽章列：完全無上邊框，位置中間偏左對齊圖四、圖六 -->
           <tr style="height: 14mm;">
-            <td class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; border-top: none;">
+            <td colspan="2" class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; border-top: none;">
               老師簽章：
             </td>
-            <td class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; border-top: none;">
+            <td colspan="4" class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; border-top: none;">
               家長簽章：
             </td>
           </tr>
@@ -713,7 +691,7 @@
     let activeMainTab = "weekly";
 
     // GAS 後端網址
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzpBFELwq_LUbffA_iCzsnXZG3QkXsZx_YkWeDsvbPsrFILoTj60ets-pXeKZh_sHgp/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyuxbtlJTH2kChHojZa0YNK_Up65vlG0wshrPzbyU7GEFI47Z1jwiWCBxajopY1uR5T/exec";
 
     function handleSchoolNameChange(val) {
       if (val) localStorage.setItem('fuya_saved_schoolName', val);
@@ -792,6 +770,34 @@
       syncPreview();
     }
 
+    // 儲存照片至本機記憶，切換週誌或重整不會消失
+    function cacheCurrentWeekPhotos() {
+      const week = document.getElementById('formWeek').value.trim();
+      if (!week) return;
+      const photosData = {
+        act1: activityBlocks.act1.map(b => b.photos),
+        act2: activityBlocks.act2.map(b => b.photos),
+        act3: activityBlocks.act3.map(b => b.photos)
+      };
+      localStorage.setItem(`fuya_photos_${week}`, JSON.stringify(photosData));
+    }
+
+    function restoreCurrentWeekPhotos(week) {
+      const cached = localStorage.getItem(`fuya_photos_${week}`);
+      if (cached) {
+        try {
+          const data = JSON.parse(cached);
+          ['act1', 'act2', 'act3'].forEach(act => {
+            if (data[act] && activityBlocks[act]) {
+              data[act].forEach((pList, idx) => {
+                if (activityBlocks[act][idx]) activityBlocks[act][idx].photos = pList || [];
+              });
+            }
+          });
+        } catch (e) {}
+      }
+    }
+
     function handleBlockPhotoUpload(e, actKey, index) {
       const files = Array.from(e.target.files);
       const block = activityBlocks[actKey][index];
@@ -800,12 +806,20 @@
         const reader = new FileReader();
         reader.onload = (event) => {
           block.photos.push(event.target.result);
+          cacheCurrentWeekPhotos();
           renderActivityEditBoxes();
           syncPreview();
         };
         reader.readAsDataURL(file);
       });
       e.target.value = '';
+    }
+
+    function removeBlockPhoto(actKey, blockIdx, photoIdx) {
+      activityBlocks[actKey][blockIdx].photos.splice(photoIdx, 1);
+      cacheCurrentWeekPhotos();
+      renderActivityEditBoxes();
+      syncPreview();
     }
 
     function removeBlockPhoto(actKey, blockIdx, photoIdx) {
@@ -1547,6 +1561,8 @@
     // =========================================================================
     function switchMainTab(tabKey) {
       activeMainTab = tabKey;
+      localStorage.setItem('fuya_active_tab', tabKey); // 記憶當前分頁
+
       const secWeekly = document.getElementById('sectionWeeklyLog');
       const secEval = document.getElementById('sectionEvaluation');
       const btnWeekly = document.getElementById('tabBtnWeekly');
@@ -1565,7 +1581,7 @@
         initEvaluationModule();
       }
     }
-
+    
     function initEvaluationModule() {
       document.getElementById('evalActivityName').value = document.getElementById('formTheme').value || '小腳ㄚ逛社區';
       document.getElementById('evalTeachers').value = document.getElementById('formTeacher').value || '李晏婷、陳聖勳';
@@ -1842,12 +1858,14 @@
 
     function syncEvalPreview() {
       if (currentStudentName && studentsEvalDB[currentStudentName]) {
+        studentsEvalDB[currentStudentName].className = document.getElementById('evalClassName').value;
         studentsEvalDB[currentStudentName].comment = document.getElementById('evalTeacherComment').value;
         studentsEvalDB[currentStudentName].childSayTitle = document.getElementById('evalChildSayTitle').value;
         studentsEvalDB[currentStudentName].childSayContent = document.getElementById('evalChildSayContent').value;
         studentsEvalDB[currentStudentName].parentComment = document.getElementById('evalParentComment').value;
         studentsEvalDB[currentStudentName].intro = document.getElementById('evalCurriculumIntro').value;
       }
+
       const school = document.getElementById('formSchoolName')?.value || '新北市私立富雅幼兒園';
       const year = document.getElementById('formYear')?.value || '113';
       const semester = document.getElementById('formSemester')?.value || '第一學期';
@@ -1860,7 +1878,6 @@
 
       document.getElementById('viewEvalClass').innerText = document.getElementById('evalClassName').value;
       document.getElementById('viewEvalActivity').innerText = document.getElementById('evalActivityName').value;
-      document.getElementById('viewEvalTeachers').innerText = document.getElementById('evalTeachers').value;
       document.getElementById('viewEvalStudentName').innerText = currentStudentName;
       document.getElementById('viewEvalPeriod').innerText = document.getElementById('evalPeriod').value;
 
@@ -1885,7 +1902,7 @@
 
         tr.innerHTML = `
           ${domainTd}
-          <td class="p-1 leading-tight">${rubric.item}</td>
+          <td class="p-1 leading-tight">${rubric.item || '　'}</td>
           ${checksTds}
         `;
         tbody.appendChild(tr);
@@ -1897,26 +1914,15 @@
 
       const introEl = document.getElementById('viewEvalIntro');
       const commentEl = document.getElementById('viewEvalTeacherComment');
-      
       introEl.innerText = introText;
       commentEl.innerText = commentText;
 
-      // 當引言＋評語字數多時，自動彈性縮小字體與行距 (確保鎖定單頁)
       if (totalChars > 220) {
-        introEl.style.fontSize = '9px';
-        introEl.style.lineHeight = '1.2';
-        commentEl.style.fontSize = '9px';
-        commentEl.style.lineHeight = '1.2';
+        introEl.style.fontSize = '9px'; commentEl.style.fontSize = '9px';
       } else if (totalChars > 150) {
-        introEl.style.fontSize = '10px';
-        introEl.style.lineHeight = '1.25';
-        commentEl.style.fontSize = '10px';
-        commentEl.style.lineHeight = '1.25';
+        introEl.style.fontSize = '10px'; commentEl.style.fontSize = '10px';
       } else {
-        introEl.style.fontSize = '11px';
-        introEl.style.lineHeight = '1.35';
-        commentEl.style.fontSize = '11px';
-        commentEl.style.lineHeight = '1.35';
+        introEl.style.fontSize = '11px'; commentEl.style.fontSize = '11px';
       }
 
       const childTitle = document.getElementById('evalChildSayTitle').value || '☆我學到...孩子說:';
@@ -1995,6 +2001,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       initDefaultSettings();
       loadSavedLogsList();
+      const lastTab = localStorage.getItem('fuya_active_tab') || 'weekly';
+      switchMainTab(lastTab);
     });
   </script>
 </body>
