@@ -174,6 +174,9 @@
           <button type="button" onclick="createNewBlankLog()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow-sm flex items-center gap-1">
             ➕ 建立新週誌
           </button>
+          <button type="button" onclick="deleteCurrentWeeklyLog()" class="px-2 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 rounded text-xs font-bold transition flex items-center gap-1">
+            🗑️ 刪除此週
+          </button>
           <div class="flex items-center gap-1">
             <select id="selectSavedLogs" onchange="onSelectSavedLog(this.value)" class="text-xs border border-emerald-400 bg-emerald-50 text-emerald-900 rounded p-1.5 font-medium">
               <option value="">📂 選擇已存週誌載入編輯...</option>
@@ -714,7 +717,7 @@
     let activeMainTab = "weekly";
 
     // GAS 後端網址
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw3CnZEoyDf9EOwIwF3n0exWzUAeJRW9nPxmZMtfFPoPAhwMXJFcAOYzoImycisKwmo/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbysPks2GUX6FsGF4rVyMgMvwlgWc-czrOfn7qaNLCXNgsoffspW8eBZNdWGO-txiF0j/exec";
 
     function handleSchoolNameChange(val) {
       if (val) localStorage.setItem('fuya_saved_schoolName', val);
@@ -1261,18 +1264,18 @@
     }
 
     async function saveWeeklyLogToCloud(isSilent = false) {
-      const btn = document.getElementById('btnSaveCloud');
-      const statusEl = document.getElementById('cloudAutoSaveStatus');
-      const weekVal = document.getElementById('formWeek').value.trim();
-
-      if (isSilent && (!weekVal || weekVal === '第  週')) return;
-
-      if (!isSilent) {
-        btn.disabled = true;
-        btn.innerText = "⏳ 儲存中...";
-      } else {
-        if (statusEl) statusEl.innerText = "☁️ 背景自動存檔中...";
-      }
+    const btn = document.getElementById('btnHeaderSave');
+    const statusEl = document.getElementById('cloudAutoSaveStatus');
+    const weekVal = document.getElementById('formWeek').value.trim();
+  
+    if (isSilent && (!weekVal || weekVal === '第  週')) return;
+  
+    if (!isSilent && btn) {
+      btn.disabled = true;
+      btn.innerText = "⏳ 儲存中...";
+    } else if (statusEl) {
+      statusEl.innerText = "☁️ 背景自動存檔中...";
+    }
 
       const payload = {
         schoolName: document.getElementById('formSchoolName').value.trim() || '新北市私立富雅幼兒園',
@@ -1362,6 +1365,36 @@
       }
     }
 
+    // 圖二需求：刪除雲端試算表中的當前週誌
+    async function deleteCurrentWeeklyLog() {
+      const year = document.getElementById('formYear').value;
+      const semester = document.getElementById('formSemester').value;
+      const classLevel = document.getElementById('formClassLevel').value;
+      const week = document.getElementById('formWeek').value.trim();
+
+      if (!week || week === '第  週') {
+        alert("請先載入或指定要刪除的週次！");
+        return;
+      }
+
+      const uniqueId = `${year}_${semester}_${classLevel}_${week}`;
+      if (confirm(`確定要從雲端永久刪除【${week}】的週誌嗎？`)) {
+        try {
+          await fetch(GAS_API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'DELETE_WEEKLY', uniqueId: uniqueId })
+          });
+          alert(`✅ 已刪除【${week}】紀錄！`);
+          createNewBlankLog();
+          loadSavedLogsList();
+        } catch (err) {
+          alert("刪除失敗：" + err);
+        }
+      }
+    }
+// 計算學期總分佈 (加入安全轉數字，徹底防止 NaN)
     function calculateTotalStatistics() {
       const activeWeek = document.getElementById('formWeek').value.trim();
       const cumulativeCounts = { '身': 0, '認': 0, '語': 0, '社': 0, '美': 0, '情': 0 };
@@ -1370,7 +1403,8 @@
         cachedCloudLogs.forEach(row => {
           if (row['週次'] !== activeWeek) {
             ['身', '認', '語', '社', '美', '情'].forEach(d => {
-              cumulativeCounts[d] += parseInt(row[d] || 0, 10);
+              const rawNum = Number(row[d]);
+              cumulativeCounts[d] += isNaN(rawNum) ? 0 : rawNum;
             });
           }
         });
@@ -1378,12 +1412,13 @@
 
       const domains = ['身', '認', '語', '社', '美', '情'];
       domains.forEach(d => {
-        const total = cumulativeCounts[d] + (currentWeekCounts[d] || 0);
+        const curNum = Number(currentWeekCounts[d]) || 0;
+        const total = (cumulativeCounts[d] || 0) + curNum;
         document.getElementById(`badge-${d}`).innerText = total;
-        document.getElementById(`sub-badge-${d}`).innerText = `當週: ${currentWeekCounts[d] || 0} | 累計: ${total}`;
+        document.getElementById(`sub-badge-${d}`).innerText = `當週: ${curNum} | 累計: ${total}`;
       });
     }
-
+    
     setInterval(() => {
       if (activeMainTab === 'weekly') {
         saveWeeklyLogToCloud(true);
@@ -1410,6 +1445,31 @@
 
         const logs = data.weeklyLogs ? data.weeklyLogs : (Array.isArray(data) ? data : []);
         cachedCloudLogs = logs;
+
+        // 圖十一、十二修復：自動載入雲端試算表已存的幼兒評量資料
+        if (data.evalLogs && Array.isArray(data.evalLogs)) {
+          data.evalLogs.forEach(e => {
+            const sName = e['幼兒姓名'];
+            if (sName) {
+              const lvls = [
+                e['身1等第'], e['身2等第'], e['認1等第'], e['認2等第'],
+                e['語1等第'], e['語2等第'], e['社1等第'], e['社2等第'],
+                e['情1等第'], e['情2等第'], e['美1等第'], e['美2等第']
+              ];
+              studentsEvalDB[sName] = {
+                levels: lvls,
+                comment: e['老師的話'] || '',
+                childSayTitle: e['孩子說標題'] || '☆我學到...孩子說:',
+                childSayContent: e['孩子說內容'] || '',
+                parentComment: e['家長的話'] || ''
+              };
+            }
+          });
+          renderStudentDropdown();
+          if (currentStudentName && studentsEvalDB[currentStudentName]) {
+            loadStudentEval(currentStudentName);
+          }
+        }
         
         selectEl.innerHTML = '<option value="">📂 選擇已存週誌載入編輯...</option>';
         if (cachedCloudLogs.length === 0) {
