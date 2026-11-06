@@ -567,7 +567,7 @@
           <col style="width: 50%;">
         </colgroup>
         <tbody>
-          <!-- 列 1: 老師的話 & 家長的話 (滿版高度) -->
+          <!-- 列 1: 老師的話 & 家長的話 (高度74mm滿版) -->
           <tr style="height: 74mm;">
             <td class="align-top p-2 leading-relaxed" style="vertical-align: top; width: 50%; overflow: hidden;">
               <div class="font-bold text-xs mb-1">老師的話：</div>
@@ -714,7 +714,7 @@
     let activeMainTab = "weekly";
 
     // GAS 後端網址
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOUqVa0TU3JNZ_sQrSvdsNQ5MWXnENYPSFdRKHyRINCe4xUX3yCteATI4g9q-N5asl/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw3CnZEoyDf9EOwIwF3n0exWzUAeJRW9nPxmZMtfFPoPAhwMXJFcAOYzoImycisKwmo/exec";
 
     function handleSchoolNameChange(val) {
       if (val) localStorage.setItem('fuya_saved_schoolName', val);
@@ -735,16 +735,46 @@
       }).join('');
     }
 
+// 圖八：大指標去重演算法 (防止 身-1-1 模仿... 重複出現兩次)
+    function cleanBigTargetDisplay(code, name) {
+      if (!name || name === code) return code;
+      const cleanName = name.replace(code, '').trim();
+      return cleanName ? `${code} ${cleanName}` : code;
+    }
+
+    // 圖十需求：開啟指標挑選器時，自動標記目前已選指標的路徑與底色
     function openPickerForBlock(actKey, index) {
       targetActKey = actKey;
       targetBlockIndex = index;
       selectedBigCode = null;
-      switchDomain('ALL');
+
+      const currentInd = activityBlocks[actKey][index]?.indicator;
+      if (currentInd) {
+        currentModalAge = currentInd.age || '大班';
+        currentModalDomain = currentInd.domain || 'ALL';
+      } else {
+        currentModalDomain = 'ALL';
+      }
+
       document.getElementById('pickerModal').classList.remove('hidden');
+      updateModalNavigationHighlight();
+      renderModalContent();
     }
 
     function closePicker() {
       document.getElementById('pickerModal').classList.add('hidden');
+    }
+
+    function updateModalNavigationHighlight() {
+      document.querySelectorAll('.age-tab').forEach(t => t.className = 'age-tab px-3 py-1 rounded bg-white text-slate-700 border');
+      const activeAgeBtn = document.getElementById(`age-${currentModalAge}`);
+      if (activeAgeBtn) activeAgeBtn.className = 'age-tab px-3 py-1 rounded bg-indigo-600 text-white font-bold ring-2 ring-indigo-300';
+
+      document.querySelectorAll('.domain-btn').forEach(btn => {
+        btn.className = 'domain-btn px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 whitespace-nowrap';
+      });
+      const activeDomBtn = document.getElementById(`domBtn-${currentModalDomain}`);
+      if (activeDomBtn) activeDomBtn.className = 'domain-btn px-3 py-2 rounded-lg bg-indigo-600 text-white font-bold whitespace-nowrap ring-2 ring-indigo-300';
     }
 
     function addActivityIndicator(actKey) {
@@ -858,6 +888,8 @@
       const subtitle = document.getElementById('pickerSubtitle');
       listEl.innerHTML = '';
 
+      const currentInd = activityBlocks[targetActKey][targetBlockIndex]?.indicator;
+
       let pool = indicatorsDB.filter(i => i.age === currentModalAge);
       if (currentModalDomain !== 'ALL') {
         pool = pool.filter(i => i.domain === currentModalDomain);
@@ -881,11 +913,16 @@
         }
 
         bigMap.forEach((val, code) => {
+          const isCurrentBig = currentInd && currentInd.bigCode === code;
           const card = document.createElement('div');
-          card.className = 'p-3 bg-white border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 cursor-pointer transition flex items-center justify-between shadow-sm';
+          card.className = `p-3 bg-white border rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 cursor-pointer transition flex items-center justify-between shadow-sm ${isCurrentBig ? 'border-2 border-emerald-500 bg-emerald-50/40' : 'border-slate-200'}`;
+          
           card.innerHTML = `
             <div>
-              <div class="font-bold text-slate-900 text-sm md:text-base">${val.bigCode} ${val.bigName}</div>
+              <div class="font-bold text-slate-900 text-sm md:text-base flex items-center gap-1.5">
+                ${cleanBigTargetDisplay(val.bigCode, val.bigName)}
+                ${isCurrentBig ? '<span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] rounded font-bold">目前使用中</span>' : ''}
+              </div>
               <div class="text-xs text-slate-500 mt-0.5">包含 ${val.count} 項學習指標</div>
             </div>
             <button class="px-3 py-1 bg-indigo-100 text-indigo-700 font-bold rounded-lg hover:bg-indigo-600 hover:text-white transition text-xs">
@@ -904,18 +941,21 @@
 
         const smallItems = pool.filter(i => i.bigCode === selectedBigCode);
         const currentBig = smallItems[0];
-        document.getElementById('currentSelectedBigTitle').innerText = `當前：${currentBig.bigCode} ${currentBig.bigName}`;
+        document.getElementById('currentSelectedBigTitle').innerText = `當前：${cleanBigTargetDisplay(currentBig.bigCode, currentBig.bigName)}`;
 
         smallItems.forEach(item => {
+          const isSelected = currentInd && currentInd.smallCode === item.smallCode;
           const card = document.createElement('div');
-          card.className = 'p-3 bg-white border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 cursor-pointer transition flex items-center justify-between shadow-sm';
+          // 圖十：選中的指標給予翠綠色醒目外框與底色
+          card.className = `p-3 rounded-xl border transition flex items-center justify-between shadow-sm cursor-pointer ${isSelected ? 'border-2 border-emerald-500 bg-emerald-50 ring-2 ring-emerald-300' : 'bg-white border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50'}`;
           card.innerHTML = `
             <div class="pr-2">
-              <span class="inline-block px-2 py-0.5 bg-indigo-100 text-indigo-800 font-bold text-xs rounded mr-1.5">${item.smallCode}</span>
+              <span class="inline-block px-2 py-0.5 ${isSelected ? 'bg-emerald-600 text-white' : 'bg-indigo-100 text-indigo-800'} font-bold text-xs rounded mr-1.5">${item.smallCode}</span>
               <span class="font-medium text-slate-900">${item.smallName}</span>
+              ${isSelected ? '<span class="ml-2 text-emerald-700 font-black text-xs">✓ 目前選用</span>' : ''}
             </div>
-            <button class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition text-xs whitespace-nowrap">
-              選擇帶入
+            <button class="px-3 py-1.5 ${isSelected ? 'bg-emerald-600' : 'bg-indigo-600'} text-white font-bold rounded-lg hover:bg-indigo-700 transition text-xs whitespace-nowrap">
+              ${isSelected ? '已選取' : '選擇帶入'}
             </button>
           `;
           card.onclick = () => {
@@ -991,6 +1031,31 @@
       renderDetailsList();
     }
 
+    // 圖一：自動提取雲端所有出現過的概念，動態更新下拉選單
+    function updateConceptFilterOptions() {
+      const select = document.getElementById('selectConceptFilter');
+      if (!select) return;
+      const currentSelected = select.value;
+      const concepts = new Set();
+
+      if (Array.isArray(cachedCloudLogs)) {
+        cachedCloudLogs.forEach(r => {
+          if (r['概念'] && String(r['概念']).trim()) concepts.add(String(r['概念']).trim());
+        });
+      }
+      const activeConcept = document.getElementById('formConcept')?.value.trim();
+      if (activeConcept) concepts.add(activeConcept);
+
+      select.innerHTML = '<option value="ALL">全部概念</option>';
+      Array.from(concepts).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.innerText = c;
+        select.appendChild(opt);
+      });
+      select.value = concepts.has(currentSelected) ? currentSelected : 'ALL';
+    }
+
     function renderDetailsList() {
       const listEl = document.getElementById('selectedIndicatorsList');
       if (!listEl) return;
@@ -1026,7 +1091,7 @@
         });
       }
 
-      const activeConcept = document.getElementById('formConcept').value.trim();
+      const activeConcept = document.getElementById('formConcept')?.value.trim();
       if (currentConceptFilter === 'ALL' || activeConcept === currentConceptFilter) {
         Object.values(activityBlocks).forEach(blocks => {
           blocks.forEach(b => {
@@ -1053,29 +1118,40 @@
         }
       });
 
-      filtered.forEach(ind => {
+      filtered.forEach((ind, iIdx) => {
         const div = document.createElement('div');
         const style = domainStyles[ind.domain] || 'bg-slate-100 text-slate-800 border-slate-300';
+        const bigDisplay = cleanBigTargetDisplay(ind.bigCode, ind.bigName);
         
+        // 圖二：拿掉「✏️當前」文字，保留淡金黃底色與橘邊條
         if (ind.isCurrent) {
           div.className = 'py-1.5 px-2 my-0.5 bg-amber-50/90 border-l-4 border-amber-500 rounded-r flex flex-wrap items-center gap-1.5 shadow-xs transition';
           div.innerHTML = `
-            <span class="inline-block px-1.5 py-0.5 bg-amber-200 text-amber-900 border border-amber-300 rounded font-black text-[11px]">【${ind.week} ✏️當前】</span>
+            <span class="inline-block px-1.5 py-0.5 bg-amber-200 text-amber-900 border border-amber-300 rounded font-black text-[11px]">【${ind.week}】</span>
             <span class="inline-block px-1.5 py-0.5 rounded font-black text-[11px] border ${style}">[${ind.domain}]</span>
-            <span class="font-bold text-slate-900 text-xs md:text-sm">${ind.bigCode} ${ind.bigName}</span>
-            <span class="text-slate-700 text-xs md:text-sm">　${ind.smallCode} ${ind.smallName}</span>
+            <span class="font-bold text-slate-900 text-xs md:text-sm">${bigDisplay}</span>
+            <span class="text-slate-700 text-xs md:text-sm cursor-pointer hover:underline" onclick="toggleDetailExpand(${iIdx})" title="點擊展開/收合">
+              　${ind.smallCode} <span id="indTxt-${iIdx}" class="line-clamp-1 inline">${ind.smallName}</span>
+            </span>
           `;
         } else {
           div.className = 'py-1 px-2 flex flex-wrap items-center gap-1.5 border-b border-slate-100 last:border-0';
           div.innerHTML = `
             <span class="inline-block px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded font-bold text-[11px]">【${ind.week}】</span>
             <span class="inline-block px-1.5 py-0.5 rounded font-black text-[11px] border ${style}">[${ind.domain}]</span>
-            <span class="font-bold text-slate-800 text-xs md:text-sm">${ind.bigCode} ${ind.bigName}</span>
-            <span class="text-slate-600 text-xs md:text-sm">　${ind.smallCode} ${ind.smallName}</span>
+            <span class="font-bold text-slate-800 text-xs md:text-sm">${bigDisplay}</span>
+            <span class="text-slate-600 text-xs md:text-sm cursor-pointer hover:underline" onclick="toggleDetailExpand(${iIdx})" title="點擊展開/收合">
+              　${ind.smallCode} <span id="indTxt-${iIdx}" class="line-clamp-1 inline">${ind.smallName}</span>
+            </span>
           `;
         }
         listEl.appendChild(div);
       });
+    }
+
+    function toggleDetailExpand(idx) {
+      const el = document.getElementById(`indTxt-${idx}`);
+      if (el) el.classList.toggle('line-clamp-1');
     }
 
     function syncPreview() {
@@ -1511,8 +1587,10 @@
       syncEvalPreview();
     }
 
+    // 圖四修復：精準比對代碼前綴 (如 情-)，絕不再因為包含「情境」二字誤抓
     function getUsedWeeklyIndicatorsByDomain(domainKeyword) {
       const shortDomain = domainKeyword.charAt(0);
+      const targetPrefix = shortDomain + '-';
       const usedInWeekly = [];
       const standardList = [];
 
@@ -1520,10 +1598,13 @@
         cachedCloudLogs.forEach(row => {
           ['活動一指標', '活動二指標', '活動三指標'].forEach(col => {
             const val = row[col];
-            if (val && val.includes(shortDomain)) {
+            if (val) {
               val.split(';;').forEach(p => {
                 const clean = p.replace('\n', ' ').trim();
-                if (clean) usedInWeekly.push({ week: row['週次'], text: clean });
+                // 必須是該領域代碼開頭 (例如 情-大- 或 認-大-)
+                if (clean.startsWith(targetPrefix)) {
+                  usedInWeekly.push({ week: row['週次'], text: clean });
+                }
               });
             }
           });
