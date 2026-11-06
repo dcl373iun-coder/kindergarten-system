@@ -186,11 +186,11 @@
         </div>
       </div>
 
-      <!-- 表頭項目編輯 -->
-      <div class="grid grid-cols-2 md:grid-cols-7 gap-2 mb-4 text-xs">
+      <!-- 表頭項目編輯 (整齊兩列，文字絕不被擠壓換行) -->
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-3 text-xs">
         <div class="md:col-span-2">
           <label class="block font-bold mb-1 text-slate-600">幼兒園名稱：</label>
-          <input type="text" id="formSchoolName" value="新北市私立富雅幼兒園" oninput="handleSchoolNameChange(this.value)" class="w-full border p-1.5 rounded font-bold text-indigo-900" placeholder="例: 新北市私立富雅幼兒園">
+          <input type="text" id="formSchoolName" value="新北市私立富雅幼兒園" oninput="handleSchoolNameChange(this.value)" class="w-full border p-1.5 rounded font-bold text-indigo-900">
         </div>
         <div>
           <label class="block font-bold mb-1 text-slate-600">學年度：</label>
@@ -202,44 +202,40 @@
         </div>
         <div>
           <label class="block font-bold mb-1 text-slate-600">年齡層/班級：</label>
-          <input type="text" id="formClassLevel" list="classLevelOptions" value="" onchange="handleClassLevelChange(this.value)" oninput="syncPreview()" placeholder="可選或自填" class="w-full border p-1.5 rounded">
+          <input type="text" id="formClassLevel" list="classLevelOptions" value="" onchange="handleClassLevelChange(this.value)" oninput="syncPreview()" class="w-full border p-1.5 rounded">
           <datalist id="classLevelOptions">
-            <option value="大班">
-            <option value="中班">
-            <option value="小班">
-            <option value="幼幼班">
+            <option value="大班"><option value="中班"><option value="小班"><option value="幼幼班">
           </datalist>
         </div>
         <div>
           <label class="block font-bold mb-1 text-slate-600">週次：</label>
           <input type="text" id="formWeek" value="第  週" oninput="handleWeekInputChange(this.value)" class="w-full border p-1.5 rounded font-medium">
         </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4 text-xs">
         <div class="md:col-span-2">
           <label class="block font-bold mb-1 text-slate-600">活動日期：</label>
           <div class="flex gap-1 items-center">
             <input type="date" id="dateStart" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
             <span>~</span>
             <input type="date" id="dateEnd" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
-            <input type="text" id="formDate" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded text-xs font-mono" placeholder="請選日期或自填">
+            <input type="text" id="formDate" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded text-xs font-mono" placeholder="例: 113/08/12-113/08/16">
           </div>
         </div>
-      </div>
-
-      <!-- 教師、主題、概念、資源 -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4 text-xs">
         <div>
           <label class="block font-bold mb-1 text-slate-600">教師：</label>
-          <input type="text" id="formTeacher" value="" oninput="syncPreview()" placeholder="請填寫教師姓名" class="w-full border p-1.5 rounded">
+          <input type="text" id="formTeacher" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded">
         </div>
         <div>
           <label class="block font-bold mb-1 text-slate-600">主題名稱：</label>
-          <input type="text" id="formTheme" value="" oninput="syncPreview()" placeholder="請填寫主題名稱" class="w-full border p-1.5 rounded">
+          <input type="text" id="formTheme" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded">
         </div>
         <div>
           <label class="block font-bold mb-1 text-slate-600">主要概念：</label>
-          <input type="text" id="formConcept" value="" oninput="syncPreview()" placeholder="請填寫主要概念" class="w-full border p-1.5 rounded">
+          <input type="text" id="formConcept" value="" oninput="syncPreview()" class="w-full border p-1.5 rounded">
         </div>
-        <div>
+            <div>
           <label class="block font-bold mb-1 text-slate-600">教學資源：</label>
           <input type="text" id="formResources" value="" oninput="syncPreview()" placeholder="白板、學習單..." class="w-full border p-1.5 rounded">
         </div>
@@ -563,14 +559,14 @@
         <tbody id="viewEvalTableBody"></tbody>
       </table>
 
-      <!-- 底部引言、評語、家長的話與簽章 (完全符合圖五：滿版88mm + 四格獨立結構) -->
+      <!-- 底部引言、評語、家長的話與簽章 (完全對齊圖六、八：A4滿版，簽章上方無橫線) -->
       <table class="official-table text-xs mt-[-1.2px]" style="height: 88mm; min-height: 88mm;">
         <colgroup>
           <col style="width: 50%;">
           <col style="width: 50%;">
         </colgroup>
         <tbody>
-          <!-- 列 1: 老師的話 & 家長的話 (高度74mm滿版) -->
+          <!-- 內容區 -->
           <tr style="height: 74mm;">
             <td class="align-top p-2 leading-relaxed" style="vertical-align: top; width: 50%; overflow: hidden;">
               <div class="font-bold text-xs mb-1">老師的話：</div>
@@ -583,12 +579,12 @@
               <div class="text-slate-700 min-h-[140px]" id="viewEvalParentComment"></div>
             </td>
           </tr>
-          <!-- 列 2: 老師簽章 & 家長簽章 (各自一格，完全吻合圖五) -->
+          <!-- 簽章區 (無橫線分隔，乾淨置底對齊圖六、八) -->
           <tr style="height: 14mm;">
-            <td class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; width: 50%;">
+            <td class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; border-top: none;">
               老師簽章：
             </td>
-            <td class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; width: 50%;">
+            <td class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; border-top: none;">
               家長簽章：
             </td>
           </tr>
@@ -598,8 +594,8 @@
   </div>
 
   <!-- ======================== 指標選擇器 Modal ======================== -->
-  <div id="pickerModal" class="no-print fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-3">
-    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+  <div id="pickerModal" class="no-print fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-2">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[94vh] h-[90vh] flex flex-col shadow-2xl overflow-hidden">
       <div class="p-4 bg-indigo-600 text-white flex justify-between items-center">
         <div>
           <h3 class="font-bold text-base md:text-lg">幼兒園教保課程大綱學習指標庫</h3>
@@ -616,7 +612,7 @@
         <button onclick="changeAgeGroup('幼幼班')" id="age-幼幼班" class="age-tab px-3 py-1 rounded bg-white text-slate-700 border">幼幼班 (2-3歲)</button>
       </div>
 
-      <div class="flex border-b bg-slate-50 p-2 gap-1 overflow-x-auto text-xs font-bold" id="domainTabs">
+      <div class="flex border-b bg-slate-50 p-3 gap-2 overflow-x-auto text-xs font-bold shrink-0 items-center" id="domainTabs" style="min-height: 52px;">
         <button onclick="switchDomain('ALL')" class="domain-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white whitespace-nowrap">全部領域</button>
         <button onclick="switchDomain('身')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 whitespace-nowrap">身體動作與健康</button>
         <button onclick="switchDomain('認')" class="domain-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 whitespace-nowrap">認知</button>
@@ -1182,11 +1178,15 @@
         if (indCell) {
           indCell.innerHTML = '';
           activityBlocks[act].forEach((block, bIdx) => {
-            if (block.indicator) {
+            if (block.indicator || (block.photos && block.photos.length > 0)) {
               const blkEl = document.createElement('div');
               blkEl.className = bIdx > 0 ? 'mt-2 pt-2 border-t border-slate-300' : '';
-              blkEl.innerHTML = `<div class="font-bold text-xs leading-tight mb-1">${block.indicator.smallCode}<br>${block.indicator.smallName}</div>`;
+              
+              if (block.indicator) {
+                blkEl.innerHTML = `<div class="font-bold text-xs leading-tight mb-1">${block.indicator.smallCode}<br>${block.indicator.smallName}</div>`;
+              }
 
+              // 照片排在正下方，即時渲染
               if (block.photos && block.photos.length > 0) {
                 const photoWrap = document.createElement('div');
                 photoWrap.className = 'grid grid-cols-1 gap-1 my-1';
@@ -1223,11 +1223,15 @@
       currentWeekCounts = domainCounts;
       calculateTotalStatistics();
 
-      const domainOrder = ['身', '認', '語', '社', '美', '情'];
-      const sortedGoals = Array.from(bigGoalsMap.entries()).sort((a, b) => {
-        return domainOrder.indexOf(a[0].charAt(0)) - domainOrder.indexOf(b[0].charAt(0));
+      const allBigGoals = [];
+      ['act1', 'act2', 'act3'].forEach(act => {
+        activityBlocks[act].forEach(block => {
+          if (block.indicator) {
+            allBigGoals.push(cleanBigTargetDisplay(block.indicator.bigCode, block.indicator.bigName));
+          }
+        });
       });
-      document.getElementById('viewBigGoals').innerText = sortedGoals.map(([code, name]) => `${code} ${name}`).join('\n') || '（未選取指標）';
+      document.getElementById('viewBigGoals').innerText = allBigGoals.join('\n') || '（未選取指標）';
 
       renderDetailsList();
     }
@@ -1837,6 +1841,13 @@
     }
 
     function syncEvalPreview() {
+      if (currentStudentName && studentsEvalDB[currentStudentName]) {
+        studentsEvalDB[currentStudentName].comment = document.getElementById('evalTeacherComment').value;
+        studentsEvalDB[currentStudentName].childSayTitle = document.getElementById('evalChildSayTitle').value;
+        studentsEvalDB[currentStudentName].childSayContent = document.getElementById('evalChildSayContent').value;
+        studentsEvalDB[currentStudentName].parentComment = document.getElementById('evalParentComment').value;
+        studentsEvalDB[currentStudentName].intro = document.getElementById('evalCurriculumIntro').value;
+      }
       const school = document.getElementById('formSchoolName')?.value || '新北市私立富雅幼兒園';
       const year = document.getElementById('formYear')?.value || '113';
       const semester = document.getElementById('formSemester')?.value || '第一學期';
