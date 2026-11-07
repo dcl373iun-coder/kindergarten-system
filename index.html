@@ -186,7 +186,7 @@
         </div>
       </div>
 
-      <!-- 表頭項目編輯 (完全符合圖五、圖六：標準兩排，整齊不換行) -->
+      <!-- 表頭項目編輯 (完全收納為整齊兩排，教學資源不再掉到第三排) -->
       <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-3 text-xs">
         <div class="md:col-span-2">
           <label class="block font-bold mb-1 text-slate-600">幼兒園名稱：</label>
@@ -213,13 +213,14 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-2 mb-4 text-xs">
+      <!-- 第二排：共 6 個單元，剛好填滿一整排 -->
+      <div class="grid grid-cols-1 md:grid-cols-6 gap-2 mb-4 text-xs">
         <div class="md:col-span-2">
           <label class="block font-bold mb-1 text-slate-600">活動日期：</label>
           <div class="flex gap-1 items-center">
-            <input type="date" id="dateStart" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
+            <input type="date" id="dateStart" onchange="autoFillDateRange()" class="border p-1 rounded text-xs w-1/2">
             <span>~</span>
-            <input type="date" id="dateEnd" onchange="autoFillDateRange()" class="border p-1 rounded text-xs">
+            <input type="date" id="dateEnd" onchange="autoFillDateRange()" class="border p-1 rounded text-xs w-1/2">
             <input type="hidden" id="formDate" value="">
           </div>
         </div>
@@ -492,7 +493,7 @@
       </div>
     </section>
 
-    <!-- 正式 A4 評量表 (單一表格格線完全貫通，滿版對齊圖八，無多餘橫線) -->
+    <!-- 正式 A4 評量表 (垂直格線與比例 100% 吻合圖五試算表標準) -->
     <main class="print-page max-w-5xl mx-auto bg-white p-4 md:p-6 shadow-lg border border-slate-300 relative" style="font-family: 'DFKai-SB', '標楷體';">
       <div class="no-print absolute top-2 left-2 px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded">
         📄【評量表標準模板預覽】
@@ -505,31 +506,45 @@
         </h3>
       </div>
 
-      <!-- 單一連貫表格：保證從表頭到表尾垂直格線 100% 筆直對齊 -->
-      <table class="official-table text-xs md:text-sm">
+      <!-- 基本資料 (A欄 14% 嚴格對齊領域欄) -->
+      <table class="official-table text-xs md:text-sm mb-0">
         <colgroup>
-          <col style="width: 14%;"> <!-- Col 1: 領域 / 班級 / 幼兒姓名 / 老師的話 -->
-          <col style="width: 58%;"> <!-- Col 2: 評量項目 / 內容 -->
-          <col style="width: 7%;">  <!-- 熟練 -->
-          <col style="width: 7%;">  <!-- 發展中 -->
-          <col style="width: 7%;">  <!-- 需協助 -->
-          <col style="width: 7%;">  <!-- 未發展 -->
+          <col style="width: 14%;"> <!-- A欄：班級、姓名、領域 -->
+          <col style="width: 26%;"> <!-- B欄 -->
+          <col style="width: 14%;"> <!-- C欄 -->
+          <col style="width: 18%;"> <!-- D欄 -->
+          <col style="width: 10%;"> <!-- E欄 -->
+          <col style="width: 18%;"> <!-- F欄 -->
         </colgroup>
         <tbody>
-          <!-- 表頭資訊 (垂直線與領域欄完美切齊) -->
           <tr>
             <td class="font-bold text-center">班　級：</td>
             <td id="viewEvalClass"></td>
-            <td colspan="2" class="font-bold text-center">活動名稱：</td>
-            <td colspan="2" id="viewEvalActivity"></td>
+            <td class="font-bold text-center">活動名稱：</td>
+            <td id="viewEvalActivity"></td>
+            <td class="font-bold text-center">教　師：</td>
+            <td id="viewEvalTeachers"></td>
           </tr>
           <tr>
             <td class="font-bold text-center">幼兒姓名：</td>
             <td class="font-bold text-base" id="viewEvalStudentName"></td>
-            <td colspan="2" class="font-bold text-center">評量期間：</td>
-            <td colspan="2" class="font-mono text-xs" id="viewEvalPeriod"></td>
+            <td class="font-bold text-center">評量期間：</td>
+            <td colspan="3" class="font-mono text-xs" id="viewEvalPeriod"></td>
           </tr>
-          <!-- 評量指標欄頭 -->
+        </tbody>
+      </table>
+
+      <!-- 12項領域指標表格 (A欄 14% 貫穿到底) -->
+      <table class="official-table text-xs mt-[-1.2px]">
+        <colgroup>
+          <col style="width: 14%;"> <!-- A欄: 領域 (14%) -->
+          <col style="width: 58%;"> <!-- B-D欄: 評量項目 (58%) -->
+          <col style="width: 7%;">  <!-- E欄: 熟練 (7%) -->
+          <col style="width: 7%;">  <!-- F欄: 發展中 (7%) -->
+          <col style="width: 7%;">  <!-- G欄: 需協助 (7%) -->
+          <col style="width: 7%;">  <!-- H欄: 未發展 (7%) -->
+        </colgroup>
+        <thead>
           <tr class="text-center font-bold bg-slate-50">
             <th rowspan="2">領域</th>
             <th rowspan="2">評量項目</th>
@@ -541,28 +556,36 @@
             <th class="py-0.5">需協助</th>
             <th class="py-0.5">未發展</th>
           </tr>
-        </tbody>
+        </thead>
         <tbody id="viewEvalTableBody"></tbody>
-        <!-- 底部引言、評語與簽章 (高度88mm撐滿A4，簽章列無多餘橫線) -->
+      </table>
+
+      <!-- 底部引言、評語與簽章 (高度88mm撐滿A4，格線對齊圖五) -->
+      <table class="official-table text-xs mt-[-1.2px]" style="height: 88mm; min-height: 88mm;">
+        <colgroup>
+          <col style="width: 72%;"> <!-- A-D欄: 老師的話 (72%) -->
+          <col style="width: 28%;"> <!-- E-H欄: 家長的話 (28% 剛好對齊上方4個等第) -->
+        </colgroup>
         <tbody>
+          <!-- 內容區 -->
           <tr style="height: 74mm;">
-            <td colspan="2" class="align-top p-2 leading-relaxed" style="vertical-align: top; overflow: hidden;">
+            <td class="align-top p-2 leading-relaxed" style="vertical-align: top; width: 72%; overflow: hidden;">
               <div class="font-bold text-xs mb-1">老師的話：</div>
               <div class="whitespace-pre-line text-slate-800 text-[11px] leading-tight" id="viewEvalIntro"></div>
               <div class="whitespace-pre-line font-medium text-slate-900 mt-1 leading-tight" id="viewEvalTeacherComment"></div>
               <div class="font-bold text-slate-900 mt-1 text-[11px]" id="viewEvalChildSay"></div>
             </td>
-            <td colspan="4" class="align-top p-2" style="vertical-align: top;">
+            <td class="align-top p-2" style="vertical-align: top; width: 28%;">
               <div class="font-bold text-xs mb-1">家長的話：</div>
               <div class="text-slate-700 min-h-[140px]" id="viewEvalParentComment"></div>
             </td>
           </tr>
-          <!-- 簽章列：完全無上邊框，位置中間偏左對齊圖四、圖六 -->
+          <!-- 簽章區 (垂直線貫通，下方無多餘底線) -->
           <tr style="height: 14mm;">
-            <td colspan="2" class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; border-top: none;">
+            <td class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle;">
               老師簽章：
             </td>
-            <td colspan="4" class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle; border-top: none;">
+            <td class="p-2 font-bold text-xs md:text-sm text-center" style="vertical-align: middle;">
               家長簽章：
             </td>
           </tr>
@@ -1553,7 +1576,8 @@
 
       renderActivityEditBoxes();
       syncPreview();
-      alert(`已載入【${log['週次']}】週誌！可直接編輯並儲存覆蓋。`);
+      const statusEl = document.getElementById('cloudAutoSaveStatus');
+      if (statusEl) statusEl.innerText = `✅ 已載入【${log['週次']}】週誌`;
     }
 
     // =========================================================================
@@ -1648,25 +1672,31 @@
       }
     }
 
+    // 幼兒切換：完整載入該名幼兒的所有評分、引言、評語與家長回饋
     function loadStudentEval(name) {
+      if (!name) return;
       currentStudentName = name;
+      
       const data = studentsEvalDB[name] || {
         levels: Array(12).fill(""),
         comment: "",
         childSayTitle: "☆我學到...孩子說:",
         childSayContent: "",
-        parentComment: ""
+        parentComment: "",
+        intro: document.getElementById('evalCurriculumIntro')?.value || ""
       };
 
-      document.getElementById('evalTeacherComment').value = data.comment;
+      // 還原文字輸入框
+      document.getElementById('evalTeacherComment').value = data.comment || "";
       document.getElementById('evalChildSayTitle').value = data.childSayTitle || "☆我學到...孩子說:";
       document.getElementById('evalChildSayContent').value = data.childSayContent || "";
       document.getElementById('evalParentComment').value = data.parentComment || "";
+      if (data.intro) document.getElementById('evalCurriculumIntro').value = data.intro;
 
-      renderEvalRubricEditor(data.levels);
+      // 重新渲染 12 項打勾與 A4 表格
+      renderEvalRubricEditor(data.levels || Array(12).fill(""));
       syncEvalPreview();
     }
-
     // 圖四修復：精準比對代碼前綴 (如 情-)，絕不再因為包含「情境」二字誤抓
     function getUsedWeeklyIndicatorsByDomain(domainKeyword) {
       const shortDomain = domainKeyword.charAt(0);
