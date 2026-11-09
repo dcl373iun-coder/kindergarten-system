@@ -162,40 +162,16 @@
       </div>
     </section>
 
-    <!-- 週誌編輯區 -->
-    <section id="editDrawer" class="no-print max-w-5xl mx-auto mb-6 bg-white p-5 rounded-xl shadow-md border-2 border-indigo-200">
-      <div class="flex justify-between items-center mb-3 pb-2 border-b">
-        <h3 class="font-bold text-slate-800 text-sm md:text-base flex items-center gap-2">
-          <span>✏️ 週誌完整編輯區</span>
-          <span class="text-xs font-normal text-slate-500">（此處修改下方模板即時連動同步）</span>
-        </h3>
-        <div class="flex flex-wrap items-center gap-2">
-          <span id="cloudAutoSaveStatus" class="text-[11px] font-mono text-slate-400">☁️ 雲端狀態：就緒</span>
-          <button type="button" onclick="createNewBlankLog()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow-sm flex items-center gap-1">
-            ➕ 建立新週誌
-          </button>
-          <button type="button" onclick="deleteCurrentWeeklyLog()" class="px-2 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 rounded text-xs font-bold transition flex items-center gap-1">
-            🗑️ 刪除此週
-          </button>
-          <div class="flex items-center gap-1">
-            <select id="selectSavedLogs" onchange="onSelectSavedLog(this.value)" class="text-xs border border-emerald-400 bg-emerald-50 text-emerald-900 rounded p-1.5 font-medium">
-              <option value="">📂 選擇已存週誌載入編輯...</option>
-            </select>
-            <button type="button" onclick="loadSavedLogsList()" title="重新整理歷史清單" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold">🔄</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 頂部浮動無遮擋提示 (取代原本惱人的 alert 彈窗) -->
+      <!-- 頂部浮動無遮擋提示 -->
       <div id="inPageToast" class="fixed top-4 right-4 z-50 hidden px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-xl transition-all"></div>
 
-      <!-- 編輯區頂部控制列 (鎖定不換行，按鈕與選單緊湊排列) -->
+      <!-- 編輯區頂部控制列 (單一乾淨列，絕不重複，下拉選單不換行) -->
       <div class="flex flex-wrap md:flex-nowrap items-center justify-between gap-2 mb-3 pb-2 border-b">
         <h3 class="font-bold text-slate-800 text-sm whitespace-nowrap flex items-center gap-1.5 shrink-0">
           <span>✏️ 週誌完整編輯區</span>
           <span class="text-xs font-normal text-slate-500 hidden sm:inline">（即時連動下方模板）</span>
         </h3>
-        <div class="flex items-center gap-1.5 shrink-0 overflow-x-auto">
+        <div class="flex items-center gap-1.5 shrink-0">
           <span id="cloudAutoSaveStatus" class="text-[11px] font-mono text-slate-400 whitespace-nowrap hidden sm:inline">☁️ 雲端狀態：就緒</span>
           <button type="button" onclick="createNewBlankLog()" class="px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow-xs whitespace-nowrap">
             ➕ 建立新週誌
@@ -203,14 +179,14 @@
           <button type="button" onclick="deleteCurrentWeeklyLog()" class="px-2 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 rounded text-xs font-bold whitespace-nowrap">
             🗑️ 刪除此週
           </button>
-          <select id="selectSavedLogs" onchange="onSelectSavedLog(this.value)" class="text-xs border border-emerald-400 bg-emerald-50 text-emerald-900 rounded p-1.5 font-medium max-w-[180px] sm:max-w-[210px] truncate">
+          <select id="selectSavedLogs" onchange="onSelectSavedLog(this.value)" class="text-xs border border-emerald-400 bg-emerald-50 text-emerald-900 rounded p-1.5 font-medium max-w-[170px] sm:max-w-[210px] truncate">
             <option value="">📂 選擇已存週誌載入...</option>
           </select>
           <button type="button" onclick="loadSavedLogsList()" title="重新整理" class="px-2 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold">🔄</button>
         </div>
       </div>
 
-      <!-- 第一排：幼兒園(2) + 學年度(1) + 學期(1) + 班級(1) + 週次(1) = 6 欄 -->
+      <!-- 第一排：園名(2) + 學年(1) + 學期(1) + 班級(1) + 週次(1) = 6 欄 -->
       <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-3 text-xs">
         <div class="md:col-span-2">
           <label class="block font-bold mb-1 text-slate-600">幼兒園名稱：</label>
@@ -237,7 +213,7 @@
         </div>
       </div>
 
-      <!-- 第二排：活動日期(2) + 教師(1) + 主題(1) + 概念(1) + 教學資源(1) = 6 欄 (完全收納為一整排) -->
+      <!-- 第二排：日期(2) + 教師(1) + 主題(1) + 概念(1) + 教學資源(1) = 6 欄 (教學資源不再掉到第三排) -->
       <div class="grid grid-cols-1 md:grid-cols-6 gap-2 mb-4 text-xs">
         <div class="md:col-span-2">
           <label class="block font-bold mb-1 text-slate-600">活動日期：</label>
@@ -456,14 +432,14 @@
       </div>
     </section>
 
-    <!-- 正式 A4 評量表 (完全依據試算表 A1~H20 欄寬、列高與格線打造) -->
+    <!-- 正式 A4 評量表 (完全依據試算表 A1~H20 欄寬 83,130,142,80,66 與列高打造) -->
     <main class="print-page max-w-5xl mx-auto bg-white p-2 md:p-4 shadow-lg border border-slate-300 relative" style="font-family: 'DFKai-SB', '標楷體';">
       <div class="no-print absolute top-2 left-2 px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold rounded">
         📄【評量表標準模板預覽】
       </div>
 
-      <!-- 單一連貫表格：A 到 H 欄 100% 貫穿到底 -->
-      <table class="official-table text-xs" style="width: 100%; border: 1.5px solid black;">
+      <!-- 單一連貫表格：A 到 H 欄 100% 垂直對齊 -->
+      <table class="official-table text-xs" style="width: 100%; border: 1.5px solid black; border-collapse: collapse;">
         <colgroup>
           <col style="width: 11.87%;"> <!-- A欄: 83px -->
           <col style="width: 18.60%;"> <!-- B欄: 130px -->
@@ -475,12 +451,12 @@
           <col style="width: 9.44%;">  <!-- H欄: 66px -->
         </colgroup>
         <tbody>
-          <!-- 1列: A1:H1 幼兒園名稱 (高度30px) -->
+          <!-- 1列: A1:H1 合併 "新北市私立富雅幼兒園" (30px) -->
           <tr style="height: 30px;">
             <td colspan="8" class="text-center font-bold text-lg md:text-xl border-0" id="viewEvalSchoolName">新北市私立富雅幼兒園</td>
           </tr>
 
-          <!-- 2列: 學年度學期大班標題 (高度30px) -->
+          <!-- 2列: 標題資訊 (30px) -->
           <tr style="height: 30px;">
             <td class="border-0"></td>
             <td class="border-0 font-bold text-center text-sm" id="viewEvalYear">113</td>
@@ -489,7 +465,7 @@
             <td colspan="2" class="border-0"></td>
           </tr>
 
-          <!-- 3列: 班級、活動名稱、教師 (高度21px) -->
+          <!-- 3列: a3 班級 b3空白 c3 活動名稱 d3空白 e3:h3 教師 (21px) -->
           <tr style="height: 21px;">
             <td class="font-bold text-center">班　級：</td>
             <td id="viewEvalClass"></td>
@@ -498,7 +474,7 @@
             <td colspan="4" class="font-bold pl-2" id="viewEvalTeachers">教　師：</td>
           </tr>
 
-          <!-- 4列: 幼兒姓名、評量期間 (高度21px) -->
+          <!-- 4列: a4 姓名 b4空白 c4:d4空白 e4:h4 評量期間 (21px) -->
           <tr style="height: 21px;">
             <td class="font-bold text-center">幼兒姓名：</td>
             <td class="font-bold text-base pl-2" id="viewEvalStudentName"></td>
@@ -506,7 +482,7 @@
             <td colspan="4" class="font-mono text-xs pl-2" id="viewEvalPeriod">評量期間：</td>
           </tr>
 
-          <!-- 5-6列: 領域、評量項目、幼兒表現 (高度21px + 21px) -->
+          <!-- 5-6列: a5:a6 領域 b5:d6 評量項目 e5:h5 幼兒表現 (各21px) -->
           <tr style="height: 21px;" class="text-center font-bold bg-slate-50">
             <th rowspan="2" class="align-middle">領域</th>
             <th colspan="3" rowspan="2" class="align-middle">評量項目</th>
@@ -520,30 +496,30 @@
           </tr>
         </tbody>
 
-        <!-- 7列至18列: 12項領域項目與勾選 (各55px) -->
+        <!-- 7列至18列: 12項領域項目與勾選 (各55px，依據試算表) -->
         <tbody id="viewEvalTableBody"></tbody>
 
-        <!-- 19列: 老師的話 (A-D欄) & 家長的話 (E-H欄) (高度234px滿版) -->
+        <!-- 19列: A~C欄 老師的話 (355px) ｜ D~H欄 家長的話 (344px) (高度234px滿版) -->
         <tbody>
           <tr style="height: 234px;">
-            <td colspan="4" class="align-top p-2 leading-relaxed" style="vertical-align: top; overflow: hidden;">
+            <td colspan="3" class="align-top p-2 leading-relaxed" style="vertical-align: top; overflow: hidden;">
               <div class="font-bold text-xs mb-1">老師的話：</div>
               <div class="whitespace-pre-line text-slate-800 text-[11px] leading-tight" id="viewEvalIntro"></div>
               <div class="whitespace-pre-line font-medium text-slate-900 mt-1 leading-tight" id="viewEvalTeacherComment"></div>
               <div class="font-bold text-slate-900 mt-1 text-[11px]" id="viewEvalChildSay"></div>
             </td>
-            <td colspan="4" class="align-top p-2" style="vertical-align: top;">
+            <td colspan="5" class="align-top p-2" style="vertical-align: top;">
               <div class="font-bold text-xs mb-1">家長的話：</div>
               <div class="text-slate-700 min-h-[140px]" id="viewEvalParentComment"></div>
             </td>
           </tr>
 
-          <!-- 20列: 老師簽章 & 家長簽章 (各自一格，無多餘底線，高度21px) -->
+          <!-- 20列: A~C欄 老師簽章 ｜ D~H欄 家長簽章 (各自一格，高度21px) -->
           <tr style="height: 21px;">
-            <td colspan="4" class="p-1 font-bold text-xs text-center align-middle">
+            <td colspan="3" class="p-1 font-bold text-xs text-center align-middle">
               老師簽章：
             </td>
-            <td colspan="4" class="p-1 font-bold text-xs text-center align-middle">
+            <td colspan="5" class="p-1 font-bold text-xs text-center align-middle">
               家長簽章：
             </td>
           </tr>
@@ -1164,10 +1140,16 @@
       document.getElementById('viewResources').innerText = document.getElementById('formResources').value;
       document.getElementById('viewSignRecord').innerText = document.getElementById('formTeacher').value;
 
+      // 安全同步三大活動，防範 null 報錯
       ['act1', 'act2', 'act3'].forEach(act => {
         const cap = act.charAt(0).toUpperCase() + act.slice(1);
-        document.getElementById(`view${cap}Title`).innerText = document.getElementById(`form${cap}Title`).value;
-        document.getElementById(`view${cap}Content`).innerHTML = formatActivityText(document.getElementById(`form${cap}Content`).value);
+        const formTitleEl = document.getElementById(`form${cap}Title`);
+        const formContentEl = document.getElementById(`form${cap}Content`);
+        const viewTitleEl = document.getElementById(`view${cap}Title`);
+        const viewContentEl = document.getElementById(`view${cap}Content`);
+
+        if (viewTitleEl && formTitleEl) viewTitleEl.innerText = formTitleEl.value;
+        if (viewContentEl && formContentEl) viewContentEl.innerHTML = formatActivityText(formContentEl.value);
 
         const indCell = document.getElementById(`view${cap}IndicatorCell`);
         if (indCell) {
@@ -1176,12 +1158,9 @@
             if (block.indicator || (block.photos && block.photos.length > 0)) {
               const blkEl = document.createElement('div');
               blkEl.className = bIdx > 0 ? 'mt-2 pt-2 border-t border-slate-300' : '';
-              
               if (block.indicator) {
                 blkEl.innerHTML = `<div class="font-bold text-xs leading-tight mb-1">${block.indicator.smallCode}<br>${block.indicator.smallName}</div>`;
               }
-
-              // 照片排在正下方，即時渲染
               if (block.photos && block.photos.length > 0) {
                 const photoWrap = document.createElement('div');
                 photoWrap.className = 'grid grid-cols-1 gap-1 my-1';
@@ -1657,7 +1636,6 @@
         parentComment: ""
       };
 
-      // 1. 還原所有輸入欄位
       document.getElementById('evalClassName').value = data.className || "";
       document.getElementById('evalActivityName').value = data.activityName || document.getElementById('formTheme')?.value || "小腳ㄚ逛社區";
       document.getElementById('evalTeachers').value = data.teachers || document.getElementById('formTeacher')?.value || "李晏婷、陳聖勳";
@@ -1668,10 +1646,9 @@
       document.getElementById('evalChildSayContent').value = data.childSayContent || "";
       document.getElementById('evalParentComment').value = data.parentComment || "";
 
-      // 2. 重新渲染 12 項勾選與 A4 表格
       renderEvalRubricEditor(data.levels || Array(12).fill(""));
       syncEvalPreview();
-      showInPageToast(`✅ 已切換至幼兒【${name}】評量表`);
+      showInPageToast(`✅ 已切換至幼兒【${name}】`);
     }
     // 圖四修復：精準比對代碼前綴 (如 情-)，絕不再因為包含「情境」二字誤抓
     function getUsedWeeklyIndicatorsByDomain(domainKeyword) {
@@ -1879,7 +1856,6 @@
         studentsEvalDB[currentStudentName].parentComment = document.getElementById('evalParentComment').value;
       }
 
-      // 同步至 A4 表格
       const school = document.getElementById('formSchoolName')?.value || '新北市私立富雅幼兒園';
       const year = document.getElementById('formYear')?.value || '113';
       const semester = document.getElementById('formSemester')?.value || '第一學期';
@@ -1896,7 +1872,7 @@
       document.getElementById('viewEvalStudentName').innerText = currentStudentName;
       document.getElementById('viewEvalPeriod').innerText = '評量期間：' + document.getElementById('evalPeriod').value;
 
-      // 渲染 12 項表格 (完全對齊試算表 7~18 列)
+      // 渲染 12 列 (高度固定 55px，B~D欄合併)
       const tbody = document.getElementById('viewEvalTableBody');
       tbody.innerHTML = '';
       const grades = ["熟練", "發展中", "需協助", "未發展"];
@@ -1904,7 +1880,7 @@
 
       evalRubricItems.forEach((rubric, idx) => {
         const tr = document.createElement('tr');
-        tr.style.height = '55px'; // 試算表嚴格 55px
+        tr.style.height = '55px';
         const userLevel = currentLevels[idx];
 
         let domainTd = '';
@@ -1919,7 +1895,7 @@
 
         tr.innerHTML = `
           ${domainTd}
-          <td colspan="3" class="p-1 leading-tight align-middle">${rubric.item || ''}</td>
+          <td colspan="3" class="p-1.5 leading-tight align-middle">${rubric.item || ''}</td>
           ${checksTds}
         `;
         tbody.appendChild(tr);
